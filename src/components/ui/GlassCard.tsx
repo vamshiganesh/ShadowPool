@@ -1,0 +1,46 @@
+import type { HTMLAttributes, ReactNode } from 'react'
+import { cn } from '@/lib/utils/cn'
+
+interface GlassCardProps extends HTMLAttributes<HTMLDivElement> {
+  children: ReactNode
+  variant?: 'default' | 'strong' | 'light'
+  glow?: boolean
+  padding?: 'none' | 'sm' | 'md' | 'lg'
+}
+
+const variantClasses = {
+  default: 'glass-surface',
+  strong: 'glass-surface-strong',
+  light: 'glass-surface-light',
+}
+
+const paddingClasses = {
+  none: '',
+  sm: 'p-4',
+  md: 'p-6',
+  lg: 'p-8',
+}
+
+export function GlassCard({
+  children,
+  className,
+  variant = 'default',
+  glow = false,
+  padding = 'md',
+  ...props
+}: GlassCardProps) {
+  return (
+    <div
+      className={cn(
+        'rounded-xl',
+        variantClasses[variant],
+        paddingClasses[padding],
+        glow && 'glow-orange',
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </div>
+  )
+}
