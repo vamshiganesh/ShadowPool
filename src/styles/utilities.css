@@ -1,0 +1,58 @@
+@utility glass-surface {
+  background: rgba(18, 16, 20, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(245, 240, 238, 0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(245, 240, 238, 0.06),
+    0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+@utility glass-surface-strong {
+  background: rgba(18, 16, 20, 0.72);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(245, 240, 238, 0.1);
+  box-shadow:
+    inset 0 1px 0 rgba(245, 240, 238, 0.08),
+    0 8px 32px rgba(0, 0, 0, 0.45);
+}
+
+@utility glass-surface-light {
+  background: rgba(245, 240, 238, 0.03);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(245, 240, 238, 0.06);
+}
+
+@utility orange-beam-border {
+  position: relative;
+  overflow: hidden;
+}
+
+@utility text-gradient-orange {
+  background: linear-gradient(135deg, #aa2608 0%, #c4390f 50%, #b76653 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@utility glow-orange {
+  box-shadow: 0 0 40px rgba(196, 57, 15, 0.2);
+}
+
+@utility glow-orange-strong {
+  box-shadow: 0 0 60px rgba(196, 57, 15, 0.35);
+}
+
+@utility font-heading {
+  font-family: var(--font-heading);
+}
+
+@utility font-body {
+  font-family: var(--font-body);
+}
+
+@utility font-mono {
+  font-family: var(--font-mono);
+}
