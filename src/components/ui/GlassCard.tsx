@@ -5,6 +5,7 @@ interface GlassCardProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode
   variant?: 'default' | 'strong' | 'light'
   glow?: boolean
+  interactive?: boolean
   padding?: 'none' | 'sm' | 'md' | 'lg'
 }
 
@@ -26,6 +27,7 @@ export function GlassCard({
   className,
   variant = 'default',
   glow = false,
+  interactive = false,
   padding = 'md',
   ...props
 }: GlassCardProps) {
@@ -36,6 +38,7 @@ export function GlassCard({
         variantClasses[variant],
         paddingClasses[padding],
         glow && 'glow-orange',
+        interactive && 'transition-all duration-250 hover:border-border-default hover:bg-bg-surface/30',
         className,
       )}
       {...props}

@@ -1,12 +1,23 @@
 import type { HTMLAttributes, ReactNode } from 'react'
 import { cn } from '@/lib/utils/cn'
+import { SectionEyebrow } from './SectionEyebrow'
+
+type HeadingSize = 'hero' | 'page' | 'section' | 'card'
 
 interface SectionHeadingProps extends HTMLAttributes<HTMLDivElement> {
   eyebrow?: string
   title: string
   description?: string
   align?: 'left' | 'center'
+  size?: HeadingSize
   children?: ReactNode
+}
+
+const titleSizeClasses: Record<HeadingSize, string> = {
+  hero: 'text-hero',
+  page: 'text-page-headline',
+  section: 'text-section-headline',
+  card: 'text-card-title',
 }
 
 export function SectionHeading({
@@ -14,29 +25,28 @@ export function SectionHeading({
   title,
   description,
   align = 'left',
+  size = 'section',
   className,
   children,
   ...props
 }: SectionHeadingProps) {
+  const HeadingTag = size === 'hero' ? 'h1' : size === 'page' ? 'h1' : 'h2'
+
   return (
     <div
       className={cn(
-        'space-y-3',
-        align === 'center' && 'text-center mx-auto max-w-2xl',
+        'space-y-4',
+        align === 'center' && 'mx-auto max-w-2xl text-center',
         className,
       )}
       {...props}
     >
-      {eyebrow && (
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-orange-warm">
-          {eyebrow}
-        </p>
-      )}
-      <h2 className="font-heading text-3xl font-semibold tracking-tight text-text-primary sm:text-4xl">
+      {eyebrow && <SectionEyebrow>{eyebrow}</SectionEyebrow>}
+      <HeadingTag className={cn('font-heading text-text-primary', titleSizeClasses[size])}>
         {title}
-      </h2>
+      </HeadingTag>
       {description && (
-        <p className="text-base text-text-secondary leading-relaxed">{description}</p>
+        <p className="max-w-xl text-body-lg text-text-secondary leading-relaxed">{description}</p>
       )}
       {children}
     </div>
