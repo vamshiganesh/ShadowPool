@@ -22,7 +22,7 @@ export function TopNav({ variant = 'marketing' }: TopNavProps) {
 
           <div className="hidden items-center gap-10 md:flex">
             {NAV_LINKS.marketing.map((link) =>
-              link.external ? (
+              'external' in link && link.external ? (
                 <a
                   key={link.href}
                   href={link.href}
