@@ -1,5 +1,7 @@
 export const APP_NAME = 'ShadowPool'
 
+export const GITHUB_URL = 'https://github.com/vamshiganesh/ShadowPool'
+
 export const ROUTES = {
   home: '/',
   app: '/app',
@@ -12,11 +14,15 @@ export const ROUTES = {
   },
 } as const
 
+export const EXTERNAL_LINKS = {
+  github: GITHUB_URL,
+} as const
+
 export const NAV_LINKS = {
   marketing: [
-    { label: 'How It Works', href: '/#how-it-works' },
+    { label: 'Protocol', href: ROUTES.docs.problem },
     { label: 'Docs', href: ROUTES.docs.problem },
-    { label: 'Stats', href: ROUTES.stats },
+    { label: 'GitHub', href: GITHUB_URL, external: true as const },
   ],
   app: [
     { label: 'Trade', href: ROUTES.app, icon: 'trade' as const },
