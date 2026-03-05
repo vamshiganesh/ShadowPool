@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { APP_NAME, EXTERNAL_LINKS, NAV_LINKS, ROUTES } from '@/lib/constants/routes'
+import { APP_NAME, NAV_LINKS, ROUTES } from '@/lib/constants/routes'
 import { Container } from '@/components/ui/Container'
 import { BeamButton } from '@/components/ui/BeamButton'
 import { cn } from '@/lib/utils/cn'

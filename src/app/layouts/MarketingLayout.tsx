@@ -1,16 +1,15 @@
 import { Outlet } from 'react-router-dom'
-import { BackgroundLayers } from '@/components/ui/BackgroundLayers'
-import { TopNav } from '@/components/navigation/TopNav'
-import { Footer } from '@/components/navigation/Footer'
+import { AtmosphereStack } from '@/components/atmosphere'
+import { TopNav, Footer } from '@/components/navigation'
 
 export function MarketingLayout() {
   return (
-    <BackgroundLayers>
+    <AtmosphereStack>
       <TopNav variant="marketing" />
-      <main className="min-h-[calc(100vh-4rem)]">
+      <main className="min-h-[calc(100vh-4.25rem)]">
         <Outlet />
       </main>
       <Footer />
-    </BackgroundLayers>
+    </AtmosphereStack>
   )
 }
