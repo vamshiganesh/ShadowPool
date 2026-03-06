@@ -3,6 +3,7 @@ import { AtmosphereStack } from '@/components/atmosphere'
 import { TopNav, DocsSidebar } from '@/components/navigation'
 import { Container } from '@/components/ui/Container'
 
+
 export function DocsLayout() {
   return (
     <AtmosphereStack particles={false} glowIntensity="subtle">

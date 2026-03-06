@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom'
 import { AtmosphereStack } from '@/components/atmosphere'
 import { AppSidebar, ProtocolTicker, BottomStatusBar } from '@/components/navigation'
 
+
 export function ApplicationLayout() {
   return (
     <AtmosphereStack particles={false} glowIntensity="subtle">

@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom'
 import { AtmosphereStack } from '@/components/atmosphere'
 import { TopNav, Footer } from '@/components/navigation'
 
+
 export function MarketingLayout() {
   return (
     <AtmosphereStack>
