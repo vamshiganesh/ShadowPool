@@ -1,7 +1,7 @@
 import { NavLink, Link } from 'react-router-dom'
 import { Activity, ArrowLeftRight, LayoutList } from 'lucide-react'
 import { APP_NAME, NAV_LINKS, ROUTES } from '@/lib/constants/routes'
-import { WalletChip } from './WalletChip'
+import { WalletChip } from '@/components/navigation/WalletChip'
 import { cn } from '@/lib/utils/cn'
 
 const iconMap = {
