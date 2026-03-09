@@ -31,7 +31,7 @@ export function LifecycleSection() {
                 transition={{ delay: i * 0.06 }}
                 className="flex flex-col items-center"
               >
-                <StageNode status={stage.status} />
+                <StageNode status={stage.status} id={stage.id} />
                 <p
                   className={cn(
                     'mt-3 font-mono text-[10px] uppercase tracking-wider',
@@ -53,7 +53,7 @@ export function LifecycleSection() {
   )
 }
 
-function StageNode({ status }: { status: 'complete' | 'active' | 'pending' }) {
+function StageNode({ status, id }: { status: 'complete' | 'active' | 'pending'; id: string }) {
   if (status === 'complete') {
     return (
       <div className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full border border-orange-primary/30 bg-orange-primary/15">
@@ -72,7 +72,7 @@ function StageNode({ status }: { status: 'complete' | 'active' | 'pending' }) {
 
   return (
     <div className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full border border-border-subtle bg-bg-surface">
-      {status === 'pending' ? (
+      {id === 'proof' ? (
         <Cpu className="h-3.5 w-3.5 text-text-faint" />
       ) : (
         <Circle className="h-3 w-3 text-text-faint" />

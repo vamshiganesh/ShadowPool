@@ -1,1 +1,10 @@
-// Feature modules — populated in later build phases
+export { HeroSection } from './sections/HeroSection'
+export { ProductPreviewSection } from './sections/ProductPreviewSection'
+export { LandingTickerSection } from './sections/LandingTickerSection'
+export { StatsStripSection } from './sections/StatsStripSection'
+export { HowItWorksSection } from './sections/HowItWorksSection'
+export { LifecycleSection } from './sections/LifecycleSection'
+export { FinalCTASection } from './sections/FinalCTASection'
+export { FooterSection } from './sections/FooterSection'
+export { TradingAppPreview } from './TradingAppPreview'
+export * from './data'

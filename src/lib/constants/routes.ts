@@ -20,7 +20,7 @@ export const EXTERNAL_LINKS = {
 
 export const NAV_LINKS = {
   marketing: [
-    { label: 'Protocol', href: ROUTES.docs.problem },
+    { label: 'Protocol', href: '/#how-it-works' },
     { label: 'Docs', href: ROUTES.docs.problem },
     { label: 'GitHub', href: GITHUB_URL, external: true as const },
   ],
