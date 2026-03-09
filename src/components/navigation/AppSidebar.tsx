@@ -10,6 +10,7 @@ const iconMap = {
   stats: Activity,
 } as const
 
+
 export function AppSidebar() {
   return (
     <aside className="flex h-full w-[15.5rem] shrink-0 flex-col border-r border-border-subtle glass-surface">

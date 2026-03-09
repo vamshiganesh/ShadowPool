@@ -6,6 +6,7 @@ interface BottomStatusBarProps {
   className?: string
 }
 
+
 export function BottomStatusBar({ className }: BottomStatusBarProps) {
   return (
     <footer
