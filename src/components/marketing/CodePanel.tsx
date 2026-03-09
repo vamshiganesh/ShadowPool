@@ -40,6 +40,7 @@ export function CodePanel({ code, language = 'rust', className }: CodePanelProps
   )
 }
 
+
 function highlightLine(line: string) {
   const keywords = ['fn', 'let', 'return', '&']
   const parts = line.split(/(\bfn\b|\blet\b|\breturn\b|&|\(|\)|\{|\}|,)/g)

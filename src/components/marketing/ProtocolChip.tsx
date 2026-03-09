@@ -17,6 +17,7 @@ interface ProtocolChipProps {
 export function ProtocolChip({ label, icon, className }: ProtocolChipProps) {
   const Icon = iconMap[icon]
 
+  
   return (
     <span
       className={cn(
