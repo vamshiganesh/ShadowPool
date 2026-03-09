@@ -6,6 +6,7 @@ import { BeamButton } from '@/components/ui/BeamButton'
 import { GhostButton } from '@/components/ui/GhostButton'
 import { LANDING_LINKS } from '@/features/landing/data'
 
+
 export function FinalCTASection() {
   return (
     <section className="py-24 lg:py-32">

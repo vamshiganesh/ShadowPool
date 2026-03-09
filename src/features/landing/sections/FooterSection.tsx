@@ -4,6 +4,7 @@ import { Container } from '@/components/ui/Container'
 import { StatusPill } from '@/components/ui/StatusPill'
 import { APP_NAME, GITHUB_URL, ROUTES } from '@/lib/constants/routes'
 
+
 export function FooterSection() {
   return (
     <footer className="border-t border-border-subtle">

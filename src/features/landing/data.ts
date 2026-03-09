@@ -16,6 +16,7 @@ export const LANDING_TICKER_ITEMS = [
   { type: 'MATCH', value: 'ETH/USDC', status: 'VALID' },
 ] as const
 
+
 export const STATS_STRIP = [
   { value: '18,432', label: 'R1CS Constraints' },
   { value: '8.4s', label: 'Avg Proof Time' },
