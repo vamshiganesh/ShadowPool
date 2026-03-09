@@ -23,6 +23,7 @@ export function BeamWrapper({ children, className }: BeamWrapperProps) {
   )
 }
 
+
 interface BeamButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode
   size?: 'sm' | 'md' | 'lg'

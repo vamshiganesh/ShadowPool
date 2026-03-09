@@ -12,6 +12,7 @@ const variantClasses = {
   strong: 'border-border-strong',
 }
 
+
 const spacingClasses = {
   none: 'my-0',
   sm: 'my-3',
