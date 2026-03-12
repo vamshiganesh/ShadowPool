@@ -1,1 +1,2 @@
-// Feature modules — populated in later build phases
+export { TradeTerminal } from './TradeTerminal'
+export { CommitmentDetailDrawer } from './overlays/CommitmentDetailDrawer'

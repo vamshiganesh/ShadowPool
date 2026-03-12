@@ -1,1 +1,1 @@
-// Feature modules — populated in later build phases
+export { ProofInspectorModal } from './ProofInspectorModal'

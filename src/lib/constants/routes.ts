@@ -7,6 +7,7 @@ export const ROUTES = {
   app: '/app',
   orders: '/orders',
   stats: '/stats',
+  mobile: '/mobile',
   docs: {
     problem: '/docs/the-problem',
     zkCommitments: '/docs/zk-commitments',

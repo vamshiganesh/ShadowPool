@@ -7,6 +7,7 @@ import { LandingPage } from '@/pages/LandingPage'
 import { TradePage } from '@/pages/TradePage'
 import { OrdersPage } from '@/pages/OrdersPage'
 import { StatsPage } from '@/pages/StatsPage'
+import { MobileTradePage } from '@/pages/MobileTradePage'
 import { DocsProblemPage } from '@/pages/DocsProblemPage'
 import { DocsZkCommitmentsPage } from '@/pages/DocsZkCommitmentsPage'
 import { DocsCircuitPage } from '@/pages/DocsCircuitPage'
@@ -16,6 +17,7 @@ export const router = createBrowserRouter([
     element: <MarketingLayout />,
     children: [
       { path: ROUTES.home, element: <LandingPage /> },
+      { path: ROUTES.mobile, element: <MobileTradePage /> },
     ],
   },
   {
