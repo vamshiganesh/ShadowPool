@@ -1,1 +1,1 @@
-// Feature modules — populated in later build phases
+// Stats feature — see components/ and data/
