@@ -1,13 +1,5 @@
-import { PageShell } from '@/components/ui/PageShell'
-
+import { CircuitDiagramContent } from '@/features/docs/content/CircuitDiagramContent'
 
 export function DocsCircuitPage() {
-  return (
-    <PageShell
-      title="Circuit Diagram"
-      description="Groth16 validity constraints expressed in the Circom circuit."
-      eyebrow="Documentation"
-      layout="docs"
-    />
-  )
+  return <CircuitDiagramContent />
 }

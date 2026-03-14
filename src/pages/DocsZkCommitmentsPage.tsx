@@ -1,13 +1,5 @@
-import { PageShell } from '@/components/ui/PageShell'
-
+import { ZkCommitmentsContent } from '@/features/docs/content/ZkCommitmentsContent'
 
 export function DocsZkCommitmentsPage() {
-  return (
-    <PageShell
-      title="ZK Commitments"
-      description="How cryptographic commitments preserve order privacy before settlement."
-      eyebrow="Documentation"
-      layout="docs"
-    />
-  )
+  return <ZkCommitmentsContent />
 }

@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Clock, Gavel, Shield } from 'lucide-react'
 import { ROUTES } from '@/lib/constants/routes'
 import {

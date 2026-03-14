@@ -1,1 +1,10 @@
-// Feature modules — populated in later build phases
+export {
+  DocsPageShell,
+  DocsSection,
+  DocsCallout,
+  DocsDiagramCard,
+  DocsComparisonPanel,
+  DocsInlineCode,
+  DocsDataTable,
+  DocsNavigationFooter,
+} from './components'

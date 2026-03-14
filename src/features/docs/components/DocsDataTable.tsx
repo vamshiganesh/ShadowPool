@@ -1,6 +1,8 @@
+import type { ReactNode } from 'react'
+
 interface DocsDataTableProps {
   columns: string[]
-  rows: (string | React.ReactNode)[][]
+  rows: (string | ReactNode)[][]
 }
 
 export function DocsDataTable({ columns, rows }: DocsDataTableProps) {
