@@ -1,3 +1,4 @@
+import { PROTOCOL } from '@/lib/constants/protocol'
 import { ROUTES } from '@/lib/constants/routes'
 
 export const HERO_CHIPS = [
@@ -7,21 +8,11 @@ export const HERO_CHIPS = [
   { label: 'Groth16 On-Chain', icon: 'proof' as const },
 ] as const
 
-export const LANDING_TICKER_ITEMS = [
-  { type: 'COMMITMENT', value: '0x7a3f…e91c', status: 'SETTLED' },
-  { type: 'BLOCK', value: '7,234,891', status: 'CONFIRMED' },
-  { type: 'PROOF', value: 'verified_groth16', status: 'SUCCESS' },
-  { type: 'COMMITMENT', value: '0x2b1a…d44f', status: 'PENDING' },
-  { type: 'SETTLEMENT', value: '0x9c1e…a7b2', status: 'ATOMIC' },
-  { type: 'MATCH', value: 'ETH/USDC', status: 'VALID' },
-] as const
-
-
 export const STATS_STRIP = [
-  { value: '18,432', label: 'R1CS Constraints' },
-  { value: '8.4s', label: 'Avg Proof Time' },
+  { value: PROTOCOL.constraints.toLocaleString(), label: 'R1CS Constraints' },
+  { value: PROTOCOL.avgProofTime, label: 'Avg Proof Time' },
   { value: '~142k', label: 'Gas per Settlement' },
-  { value: 'Groth16', label: 'Proving System' },
+  { value: PROTOCOL.provingSystem, label: 'Proving System' },
 ] as const
 
 export const HOW_IT_WORKS_STEPS = [

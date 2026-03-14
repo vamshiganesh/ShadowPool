@@ -1,14 +1,13 @@
 import { MobileDeviceFrame } from '@/features/mobile/MobileDeviceFrame'
 import { MobileTradeScreen } from '@/features/mobile/MobileTradeScreen'
-import { CommitmentDetailDrawer } from '@/features/trade/overlays/CommitmentDetailDrawer'
-import { ProofInspectorModal } from '@/features/proof-inspector/ProofInspectorModal'
+import { AppOverlays } from '@/components/trading/AppOverlays'
 import { Container } from '@/components/ui/Container'
 import { SectionHeading } from '@/components/ui/SectionHeading'
 
 export function MobileTradeShowcase() {
   return (
     <>
-      <section className="py-16 lg:py-24">
+      <section className="py-12 sm:py-16 lg:py-24">
         <Container>
           <SectionHeading
             eyebrow="Mobile Terminal"
@@ -16,15 +15,14 @@ export function MobileTradeShowcase() {
             description="A purpose-built mobile interface — not a shrunk desktop layout."
             align="center"
             size="page"
-            className="mb-14"
+            className="mb-10 sm:mb-14"
           />
           <MobileDeviceFrame>
             <MobileTradeScreen />
           </MobileDeviceFrame>
         </Container>
       </section>
-      <CommitmentDetailDrawer />
-      <ProofInspectorModal />
+      <AppOverlays />
     </>
   )
 }

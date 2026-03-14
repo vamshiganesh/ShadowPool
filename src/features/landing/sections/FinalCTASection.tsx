@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Container } from '@/components/ui/Container'
-import { BeamButton } from '@/components/ui/BeamButton'
+import { BeamLink } from '@/components/ui/BeamButton'
 import { GhostButton } from '@/components/ui/GhostButton'
 import { LANDING_LINKS } from '@/features/landing/data'
 
@@ -38,12 +38,10 @@ export function FinalCTASection() {
             </p>
 
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Link to={LANDING_LINKS.launchApp}>
-                <BeamButton size="lg">
-                  Launch App
-                  <ArrowRight className="h-4 w-4" />
-                </BeamButton>
-              </Link>
+              <BeamLink to={LANDING_LINKS.launchApp} size="lg">
+                Launch App
+                <ArrowRight className="h-4 w-4" />
+              </BeamLink>
               <Link to={LANDING_LINKS.protocol}>
                 <GhostButton size="lg" className="rounded-pill border border-border-subtle px-7">
                   Read Protocol Docs

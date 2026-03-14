@@ -19,23 +19,13 @@
   }
 }
 
-
 @keyframes slow-float {
   0%,
   100% {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-8px);
-  }
-}
-
-@keyframes subtle-shimmer {
-  0% {
-    background-position: -200% center;
-  }
-  100% {
-    background-position: 200% center;
+    transform: translateY(-6px);
   }
 }
 
@@ -51,7 +41,7 @@
 @keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -64,22 +54,32 @@
 }
 
 .animate-beam-rotate {
-  animation: beam-rotate 4s linear infinite;
+  animation: beam-rotate 5s linear infinite;
 }
 
 .animate-slow-float {
-  animation: slow-float 6s ease-in-out infinite;
-}
-
-.animate-subtle-shimmer {
-  background-size: 200% auto;
-  animation: subtle-shimmer 3s linear infinite;
+  animation: slow-float 8s ease-in-out infinite;
 }
 
 .animate-ticker-scroll {
-  animation: ticker-scroll 30s linear infinite;
+  animation: ticker-scroll 35s linear infinite;
 }
 
 .animate-fade-in {
-  animation: fade-in 0.5s ease-out forwards;
+  animation: fade-in 0.45s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse-glow,
+  .animate-beam-rotate,
+  .animate-slow-float,
+  .animate-ticker-scroll {
+    animation: none;
+  }
+
+  .animate-fade-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
 }

@@ -10,8 +10,6 @@ import {
   type OrderRow,
 } from '@/features/orders'
 import { useTradeStore } from '@/store/tradeStore'
-import { CommitmentDetailDrawer } from '@/features/trade/overlays/CommitmentDetailDrawer'
-import { ProofInspectorModal } from '@/features/proof-inspector/ProofInspectorModal'
 
 const PAGE_SIZE = 5
 
@@ -38,7 +36,7 @@ export function OrdersPage() {
   }
 
   return (
-    <div className="space-y-6 p-6 lg:p-8">
+    <div className="space-y-6 p-4 sm:p-6 lg:p-8">
       <OrdersHeader />
       <OrdersFilterTabs active={filter} onChange={handleFilterChange} />
       <OrdersSummaryStrip />
@@ -49,9 +47,6 @@ export function OrdersPage() {
         onPageChange={setPage}
         onInspect={handleInspect}
       />
-
-      <CommitmentDetailDrawer />
-      <ProofInspectorModal />
     </div>
   )
 }

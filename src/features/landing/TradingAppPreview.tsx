@@ -3,16 +3,13 @@ import { ArrowLeftRight, TrendingDown, TrendingUp } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { StatusPill } from '@/components/ui/StatusPill'
 import { InlineCodePill } from '@/components/ui/InlineCodePill'
+import { MOCK_SETTLEMENTS } from '@/features/trade/data/mockSettlements'
 
 interface TradingAppPreviewProps {
   className?: string
 }
 
-const SETTLEMENTS = [
-  { time: '14:32:08', pair: 'ETH/USDC', price: '3,421.50', status: 'SETTLED' as const },
-  { time: '14:31:44', pair: 'ETH/USDC', price: '3,419.20', status: 'PROVING' as const },
-  { time: '14:30:12', pair: 'ETH/USDC', price: '3,418.00', status: 'SETTLED' as const },
-]
+const PREVIEW_SETTLEMENTS = MOCK_SETTLEMENTS.slice(0, 3)
 
 export function TradingAppPreview({ className }: TradingAppPreviewProps) {
   return (
@@ -63,9 +60,9 @@ export function TradingAppPreview({ className }: TradingAppPreviewProps) {
                 Live Settlement Feed
               </p>
               <div className="space-y-1.5">
-                {SETTLEMENTS.map((row) => (
+                {PREVIEW_SETTLEMENTS.map((row) => (
                   <div
-                    key={row.time}
+                    key={row.id}
                     className="flex items-center justify-between rounded-lg bg-bg-elevated/50 px-3 py-2 font-mono text-[10px]"
                   >
                     <span className="text-text-faint">{row.time}</span>
@@ -146,17 +143,13 @@ export function TradingAppPreview({ className }: TradingAppPreviewProps) {
         </div>
       </div>
 
-      <motion.div
-        animate={{ y: [0, -6, 0] }}
-        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-        className="pointer-events-none absolute -right-4 -top-4 hidden rounded-xl glass-surface px-3 py-2 lg:block"
-      >
+      <div className="pointer-events-none absolute -right-4 -top-4 hidden rounded-xl glass-surface px-3 py-2 lg:block">
         <div className="flex items-center gap-2 font-mono text-[10px] text-text-muted">
           <ArrowLeftRight className="h-3 w-3 text-orange-warm" />
           <span>Matched</span>
           <TrendingUp className="h-3 w-3 text-emerald-400" />
         </div>
-      </motion.div>
+      </div>
     </motion.div>
   )
 }

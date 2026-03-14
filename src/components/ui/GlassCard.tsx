@@ -38,7 +38,8 @@ export function GlassCard({
         variantClasses[variant],
         paddingClasses[padding],
         glow && 'glow-orange',
-        interactive && 'transition-all duration-250 hover:border-border-default hover:bg-bg-surface/30',
+        interactive &&
+          'transition-all duration-250 hover:-translate-y-0.5 hover:border-border-default hover:bg-bg-surface/30 hover:shadow-[0_8px_32px_rgba(0,0,0,0.2)]',
         className,
       )}
       {...props}

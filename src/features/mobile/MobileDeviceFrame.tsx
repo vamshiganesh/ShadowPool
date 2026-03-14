@@ -39,7 +39,7 @@ export function MobileDeviceFrame({ children, className }: MobileDeviceFrameProp
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="relative mx-auto w-[320px] rounded-[2.5rem] border border-border-default bg-bg-surface p-2 shadow-[0_32px_80px_rgba(0,0,0,0.7)]"
+        className="relative mx-auto w-full max-w-[320px] rounded-[2.5rem] border border-border-default bg-bg-surface p-2 shadow-[0_32px_80px_rgba(0,0,0,0.7)]"
       >
         {/* Dynamic island */}
         <div className="absolute left-1/2 top-3 z-10 h-6 w-24 -translate-x-1/2 rounded-full bg-bg-base" />
@@ -67,7 +67,7 @@ function FloatingCard({
   className?: string
 }) {
   return (
-    <GlassCard padding="sm" className={cn('w-44 animate-slow-float', className)}>
+    <GlassCard padding="sm" className={cn('w-44', className)}>
       <MonoLabel variant="faint" size="micro">
         {label}
       </MonoLabel>

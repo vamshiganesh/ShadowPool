@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils/cn'
 
 export function CommitmentDetailDrawer() {
   const { commitmentDrawerOpen, closeCommitmentDrawer, openProofInspector } = useTradeStore()
-  const { handleBackdropClick } = useOverlay({
+  const { handleBackdropClick, containerRef } = useOverlay({
     isOpen: commitmentDrawerOpen,
     onClose: closeCommitmentDrawer,
   })
@@ -44,8 +44,9 @@ export function CommitmentDetailDrawer() {
             )}
             role="dialog"
             aria-modal="true"
-            aria-label="Commitment detail"
+            aria-labelledby="commitment-drawer-title"
           >
+            <div ref={containerRef} tabIndex={-1} className="flex h-full flex-col outline-none">
             <CommitmentDrawerHeader onClose={closeCommitmentDrawer} hash={data.hash} />
 
             <div className="flex-1 overflow-y-auto px-6 py-5">
@@ -130,6 +131,7 @@ export function CommitmentDetailDrawer() {
                 View on Explorer
               </BeamButton>
             </div>
+            </div>
           </motion.aside>
         </>
       )}
@@ -147,11 +149,12 @@ function CommitmentDrawerHeader({
   return (
     <div className="flex items-start justify-between border-b border-border-subtle px-6 py-5">
       <div>
-        <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-text-primary">
+        <h2 id="commitment-drawer-title" className="font-heading text-sm font-semibold uppercase tracking-wide text-text-primary">
           Commitment Detail
         </h2>
         <button
           type="button"
+          aria-label="Copy commitment hash"
           className="mt-2 flex items-center gap-2 font-mono text-xs text-orange-warm hover:text-orange-primary"
         >
           {hash.slice(0, 24)}…

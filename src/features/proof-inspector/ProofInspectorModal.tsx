@@ -22,7 +22,7 @@ const TABS: { id: ProofTab; label: string }[] = [
 export function ProofInspectorModal() {
   const { proofInspectorOpen, closeProofInspector } = useTradeStore()
   const [activeTab, setActiveTab] = useState<ProofTab>('proof')
-  const { handleBackdropClick } = useOverlay({
+  const { handleBackdropClick, containerRef } = useOverlay({
     isOpen: proofInspectorOpen,
     onClose: closeProofInspector,
   })
@@ -44,18 +44,20 @@ export function ProofInspectorModal() {
 
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
             <motion.div
+              ref={containerRef}
+              tabIndex={-1}
               initial={{ opacity: 0, scale: 0.96, y: 12 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: 12 }}
               transition={{ type: 'spring', damping: 28, stiffness: 320 }}
               className={cn(
-                'flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl',
+                'flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl outline-none',
                 'border border-border-default glass-surface-strong',
                 'shadow-[0_0_0_1px_rgba(196,57,15,0.15),0_24px_80px_rgba(0,0,0,0.6)]',
               )}
               role="dialog"
               aria-modal="true"
-              aria-label="Proof inspector"
+              aria-labelledby="proof-inspector-title"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Top accent line */}
@@ -63,7 +65,7 @@ export function ProofInspectorModal() {
 
               <div className="flex items-start justify-between border-b border-border-subtle px-6 py-5">
                 <div>
-                  <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-text-primary">
+                  <h2 id="proof-inspector-title" className="font-heading text-sm font-semibold uppercase tracking-wide text-text-primary">
                     Proof Inspector
                   </h2>
                   <p className="mt-1 font-mono text-[11px] text-orange-warm/80">
@@ -85,11 +87,15 @@ export function ProofInspectorModal() {
                 </button>
               </div>
 
-              <div className="flex border-b border-border-subtle px-6">
+              <div role="tablist" aria-label="Proof inspector sections" className="flex border-b border-border-subtle px-6">
                 {TABS.map((tab) => (
                   <button
                     key={tab.id}
                     type="button"
+                    role="tab"
+                    id={`proof-tab-${tab.id}`}
+                    aria-selected={activeTab === tab.id}
+                    aria-controls={`proof-panel-${tab.id}`}
                     onClick={() => setActiveTab(tab.id)}
                     className={cn(
                       'relative px-4 py-3 font-mono text-[11px] uppercase tracking-wider transition-colors',
@@ -110,9 +116,19 @@ export function ProofInspectorModal() {
               </div>
 
               <div className="min-h-0 flex-1 overflow-y-auto p-6">
-                {activeTab === 'proof' && <ProofDataPanel data={data} />}
-                {activeTab === 'signals' && <SignalsPanel signals={data.publicSignals} />}
-                {activeTab === 'circuit' && <CircuitPanel data={data} />}
+                {TABS.map((tab) => (
+                  <div
+                    key={tab.id}
+                    role="tabpanel"
+                    id={`proof-panel-${tab.id}`}
+                    aria-labelledby={`proof-tab-${tab.id}`}
+                    hidden={activeTab !== tab.id}
+                  >
+                    {tab.id === 'proof' && <ProofDataPanel data={data} />}
+                    {tab.id === 'signals' && <SignalsPanel signals={data.publicSignals} />}
+                    {tab.id === 'circuit' && <CircuitPanel data={data} />}
+                  </div>
+                ))}
               </div>
 
               <div className="flex flex-wrap gap-3 border-t border-border-subtle p-5">

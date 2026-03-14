@@ -1,21 +1,23 @@
 import { Outlet } from 'react-router-dom'
 import { AtmosphereStack } from '@/components/atmosphere'
-import { AppSidebar, ProtocolTicker, BottomStatusBar } from '@/components/navigation'
-
+import { AppSidebar, ProtocolTicker, BottomStatusBar, AppMobileNav } from '@/components/navigation'
+import { AppOverlays } from '@/components/trading/AppOverlays'
 
 export function ApplicationLayout() {
   return (
     <AtmosphereStack particles={false} glowIntensity="subtle">
-      <div className="flex h-screen">
+      <div className="flex h-[100dvh] flex-col lg:flex-row">
         <AppSidebar />
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           <ProtocolTicker />
           <main className="min-h-0 flex-1 overflow-y-auto">
             <Outlet />
           </main>
-          <BottomStatusBar />
+          <BottomStatusBar className="hidden lg:flex" />
+          <AppMobileNav />
         </div>
       </div>
+      <AppOverlays />
     </AtmosphereStack>
   )
 }

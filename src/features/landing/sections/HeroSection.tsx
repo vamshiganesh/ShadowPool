@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
-import { BeamButton } from '@/components/ui/BeamButton'
+import { BeamLink } from '@/components/ui/BeamButton'
 import { GhostButton } from '@/components/ui/GhostButton'
 import { StatusPill } from '@/components/ui/StatusPill'
 import { ProtocolChip } from '@/components/marketing/ProtocolChip'
@@ -33,12 +33,10 @@ export function HeroSection() {
           </p>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link to={LANDING_LINKS.launchApp}>
-              <BeamButton size="lg">
-                Launch App
-                <ArrowRight className="h-4 w-4" />
-              </BeamButton>
-            </Link>
+            <BeamLink to={LANDING_LINKS.launchApp} size="lg">
+              Launch App
+              <ArrowRight className="h-4 w-4" />
+            </BeamLink>
             <Link to={LANDING_LINKS.readCircuit}>
               <GhostButton size="lg" className="rounded-pill border border-border-subtle px-7">
                 Read the Circuit

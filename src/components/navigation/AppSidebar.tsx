@@ -13,7 +13,7 @@ const iconMap = {
 
 export function AppSidebar() {
   return (
-    <aside className="flex h-full w-[15.5rem] shrink-0 flex-col border-r border-border-subtle glass-surface">
+    <aside className="hidden h-full w-[15.5rem] shrink-0 flex-col border-r border-border-subtle glass-surface lg:flex">
       <div className="flex h-[4.25rem] items-center border-b border-border-subtle px-5">
         <Link
           to={ROUTES.home}
