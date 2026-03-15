@@ -34,13 +34,34 @@ npx snarkjs r1cs info "$BUILD_DIR/$CIRCUIT_NAME.r1cs"
 echo ""
 
 # Step 3: Download pot16 if not present
+#
+# The circuit (~1.7k constraints, well under 2^16 = 65,536) requires the
+# pot16 powers-of-tau file. pot12 (4,096) is too small for the intended
+# constraint envelope and MUST NOT be used.
+#
+# The original Hermez S3 bucket is deprecated (403 Access Denied). The
+# official mirror is the Polygon zkEVM Google Cloud Storage bucket.
+#   Legacy (dead): https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_16.ptau
 PTAU_FILE="$BUILD_DIR/pot16_final.ptau"
+PTAU_URL="https://storage.googleapis.com/zkevm/ptau/powersOfTau28_hez_final_16.ptau"
+# Expected BLAKE2b-512 (from snarkjs README) for integrity verification.
+PTAU_B2SUM="6a6277a2f74e1073601b4f9fed6e1e55226917efb0f0db8a07d98ab01df1ccf43eb0e8c3159432acd4960e2f29fe84a4198501fa54c8dad9e43297453efec125"
 if [ ! -f "$PTAU_FILE" ]; then
-  echo "[3/5] Downloading Hermez pot16 ceremony file..."
-  curl -L "https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_16.ptau" \
-    -o "$PTAU_FILE"
+  echo "[3/5] Downloading pot16 ceremony file (Polygon zkEVM mirror)..."
+  curl -fL "$PTAU_URL" -o "$PTAU_FILE"
 else
   echo "[3/5] pot16_final.ptau already present. Skipping download."
+fi
+# Verify integrity when b2sum is available (non-fatal if tool missing).
+if command -v b2sum >/dev/null 2>&1; then
+  ACTUAL_B2="$(b2sum "$PTAU_FILE" | awk '{print $1}')"
+  if [ "$ACTUAL_B2" != "$PTAU_B2SUM" ]; then
+    echo "ERROR: pot16_final.ptau BLAKE2b mismatch — aborting." >&2
+    echo "  expected: $PTAU_B2SUM" >&2
+    echo "  actual:   $ACTUAL_B2" >&2
+    exit 1
+  fi
+  echo "      pot16_final.ptau integrity verified (BLAKE2b OK)."
 fi
 echo ""
 
