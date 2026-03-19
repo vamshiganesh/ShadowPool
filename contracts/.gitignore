@@ -1,0 +1,10 @@
+# Foundry
+out/
+cache/
+broadcast/
+
+# Dependencies (managed via forge install)
+# lib/ is committed by default in Foundry; keep forge-std vendored.
+
+# Env
+.env
