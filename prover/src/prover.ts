@@ -1,27 +1,30 @@
 import * as snarkjs from "snarkjs";
-import type { MatchedPair } from "./types.js";
-import type { ProveResult } from "./witness.js";
-import { generateProof } from "./witness.js";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import type { MatchedPair, Groth16Proof } from "./types";
+import { generateProof } from "./witness";
+
+const VKEY_PATH = path.resolve(
+  __dirname,
+  "../../circuits/build/verification_key.json",
+);
+
+export type { ProveResult } from "./witness";
+export { generateProof } from "./witness";
 
 /**
  * High-level proving entry point (Part 9 layout: prover/src/prover.ts).
  * Delegates to witness.ts — snarkjs is always called as a library.
  */
-export async function proveMatch(pair: MatchedPair): Promise<ProveResult> {
+export async function proveMatch(pair: MatchedPair) {
   return generateProof(pair);
 }
 
 /** Local verification before on-chain submission (optional sanity check). */
 export async function verifyProofLocally(
-  proof: ProveResult["proof"],
+  proof: Groth16Proof,
   publicSignals: string[],
 ): Promise<boolean> {
-  const vkeyPath = new URL(
-    "../../circuits/build/verification_key.json",
-    import.meta.url,
-  );
-  const vkey = await import(vkeyPath.href, { with: { type: "json" } }).then(
-    (m) => m.default,
-  );
+  const vkey = JSON.parse(fs.readFileSync(VKEY_PATH, "utf8"));
   return snarkjs.groth16.verify(vkey, publicSignals, proof);
 }

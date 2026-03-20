@@ -1,9 +1,6 @@
 import * as snarkjs from "snarkjs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import type { MatchedPair, Groth16Proof } from "./types.js";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+import * as path from "node:path";
+import type { MatchedPair, Groth16Proof } from "./types";
 
 const WASM_PATH = path.resolve(
   __dirname,

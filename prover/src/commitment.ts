@@ -1,5 +1,5 @@
 import { buildPoseidon } from "circomlibjs";
-import type { OrderCommitment } from "./types.js";
+import type { OrderCommitment } from "./types";
 
 let poseidonInstance: Awaited<ReturnType<typeof buildPoseidon>> | null = null;
 
