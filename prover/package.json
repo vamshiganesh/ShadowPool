@@ -1,19 +1,24 @@
 {
-  "name": "prover",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "shadowpool-prover",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ShadowPool Groth16 proving and settlement submission service",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "prove:demo": "ts-node src/demo.ts",
+    "start": "ts-node src/demo.ts"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "circomlibjs": "^0.1.7",
-    "dotenv": "^17.4.2",
-    "ethers": "^6.17.0",
+    "dotenv": "^17.2.0",
+    "ethers": "^6.15.0",
     "snarkjs": "^0.7.6"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
   }
 }
