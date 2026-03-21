@@ -1,4 +1,4 @@
-import type { OrderCommitment, MatchedPair } from "./types.js";
+import type { OrderCommitment, MatchedPair } from "./types";
 
 /**
  * Find a matching pair from the open commitment pool.
@@ -20,13 +20,10 @@ export function findMatch(orders: OrderCommitment[]): MatchedPair | null {
       const a = orders[i];
       const b = orders[j];
 
-      // Assign bid (lower floor) and ask (higher ceiling).
       const bid = a.limitPrice <= b.limitPrice ? a : b;
       const ask = a.limitPrice <= b.limitPrice ? b : a;
 
       if (bid.assetAmount !== ask.assetAmount) continue;
-
-      // No overlap when bid floor exceeds ask ceiling.
       if (bid.limitPrice > ask.limitPrice) continue;
 
       const clearingPrice = (bid.limitPrice + ask.limitPrice) / 2n;
