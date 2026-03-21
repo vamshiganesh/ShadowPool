@@ -374,3 +374,80 @@ export function subscribe(handler: Handler) {
 
 ### Received Output:
 
+Part 12 is complete. The TypeScript prover service builds, proves locally, and verifies — all via snarkjs as a library (no subprocess).
+Files created (prover/)
+prover/
+ package.json
+ tsconfig.json
+ .env.example
+ .gitignore
+ src/
+   types.ts
+   commitment.ts      ← Poseidon [assetAmount, limitPrice, nonce, salt]
+   matcher.ts
+   witness.ts           ← snarkjs.groth16.fullProve
+   prover.ts            ← proveMatch + verifyProofLocally
+   calldata.ts          ← exportSolidityCallData parser
+   submitter.ts         ← ethers settle() with correct ABI
+   queue.ts
+   index.ts             ← exports runProver
+   demo.ts              ← local demo (circuits/test vectors)
+   shims.d.ts           ← snarkjs / circomlibjs types
+shared/
+ addresses.json         ← placeholder (filled by Deploy.s.sol)
+Fixes vs the prompt (would not work with Part 11 contracts)
+Issue
+Prompt
+Fix
+settle ABI
+uint pA, uint pB, uint pC
+uint256[2], uint256[2][2], uint256[2] (matches DarkPoolSettlement.sol)
+Calldata parsing
+broken argv indices
+calldata.ts parses exportSolidityCallData via JSON.parse
+Matcher overlap
+if (bid.limitPrice < ask.limitPrice) continue skipped valid pairs
+if (bid.limitPrice > ask.limitPrice) continue
+Commitment hex
+F.toString(hash, 16)
+BigInt(F.toString(hash)).toString(16) (circomlibjs API)
+Invalid orders
+not filtered
+runProver skips mismatched commitments
+Process hang
+—
+demo.ts calls process.exit(0) after snarkjs (event loop stays open otherwise)
+
+Demo run (verified)
+cd prover && npm run prove:demo
+Output:
+2 orders matched (clearing 3421500000)
+Groth16 proof generated (~2s)
+Local snarkjs.groth16.verify → OK
+Skips on-chain submit (default)
+To submit on Sepolia after deploy:
+# fill prover/.env from .env.example
+SUBMIT_ON_CHAIN=1 npm run prove:demo
+Deliverables checklist
+snarkjs as library, never subprocess: ✅ groth16.fullProve, verify, exportSolidityCallData imported directly
+commitment.ts field order matches circuit: ✅ [assetAmount, limitPrice, nonce, salt]
+matcher.ts uses bigint throughout: ✅ all prices/amounts are bigint
+submitter.ts reads shared/addresses.json: ✅ with placeholder guard
+index.ts exports runProver: ✅ plus re-exports for matcher, witness, prover, queue
+Usage
+import { runProver } from "./index";
+await runProver(orders, { submit: false }); // prove only
+await runProver(orders, { submit: true });  // prove + broadcast settle()
+Ready for Part 13 (Rust watcher) when you paste it — it will publish to queue.ts and the prover will consume matched pairs.
+The first background demo run (708226) was aborted — it looked stuck because tail buffered output and snarkjs kept the Node process alive after proving finished.
+A later run succeeded: match found, proof generated, local verification passed, on-chain submit skipped (as expected for the demo).
+That hang is fixed — demo.ts now calls process.exit(0) after completion. A clean run finishes in ~3s with exit 0:
+cd prover && npm run prove:demo
+
+
+
+
+
+
+
+
