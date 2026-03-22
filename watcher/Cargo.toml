@@ -1,6 +1,19 @@
 [package]
-name = "watcher"
+name = "shadowpool-watcher"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
+
+[[bin]]
+name = "shadowpool-watcher"
+path = "src/main.rs"
 
 [dependencies]
+# alloy 0.3.x — the prompt's crate; "full" pulls transport, providers, sol-types, etc.
+alloy = { version = "0.3", features = ["full"] }
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+dotenv = "0.15"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+anyhow = "1"
