@@ -38,6 +38,16 @@ async function main() {
   await runProver(DEMO_ORDERS, { submit: submitOnChain });
 }
 
+// snarkjs spins up worker threads internally; they can outlive the promise
+// and keep the event loop alive indefinitely. Force-exit after 30 s to
+// ensure the process always terminates even if a stray thread lingers.
+const forceExitTimer = setTimeout(() => {
+  console.error("[prover] Force-exit after 30s timeout (stray worker thread).");
+  process.exit(0);
+}, 30_000);
+// Don't let this timer itself prevent Node from exiting if everything is clean.
+forceExitTimer.unref();
+
 main()
   .then(() => process.exit(0))
   .catch((err) => {
