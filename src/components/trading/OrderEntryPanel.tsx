@@ -1,8 +1,11 @@
+import { useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { useTradeStore } from '@/store/tradeStore'
 import { GlassCard } from '@/components/ui/GlassCard'
 import { CommitmentHashBox } from '@/components/trading/CommitmentHashBox'
 import { LifecycleStepper } from '@/components/trading/LifecycleStepper'
+import { useCommitment } from '@/lib/crypto/useCommitment'
+import { useSubmitCommitment } from '@/lib/contracts/useOrderBook'
 import { cn } from '@/lib/utils/cn'
 
 export function OrderEntryPanel() {
@@ -10,13 +13,29 @@ export function OrderEntryPanel() {
     side,
     price,
     amount,
-    commitmentHash,
     activeLifecycleStage,
     setSide,
     setPrice,
     setAmount,
     openCommitmentDrawer,
   } = useTradeStore()
+
+  const { hash, isComputing, error } = useCommitment(amount, price)
+  const { submit, isPending, isConfirming, isSuccess } = useSubmitCommitment()
+
+  useEffect(() => {
+    if (isSuccess) {
+      openCommitmentDrawer()
+    }
+  }, [isSuccess, openCommitmentDrawer])
+
+  const handleCommit = async () => {
+    if (!hash || isComputing || isPending || isConfirming) return
+    await submit(hash, amount)
+  }
+
+  const isSubmitting = isPending || isConfirming
+  const canSubmit = Boolean(hash) && !isComputing && !isSubmitting
 
   return (
     <div className="flex h-full flex-col gap-4">
@@ -49,15 +68,22 @@ export function OrderEntryPanel() {
               </button>
             }
           />
-          <CommitmentHashBox hash={commitmentHash} />
+          <CommitmentHashBox hash={hash} isComputing={isComputing} />
+          {error && (
+            <p className="font-mono text-[10px] text-red-400">{error}</p>
+          )}
         </div>
 
         <button
           type="button"
-          onClick={openCommitmentDrawer}
-          className="mt-5 w-full rounded-lg bg-gradient-to-b from-orange-primary to-orange-deep py-3 font-mono text-xs font-medium uppercase tracking-wider text-text-primary shadow-glow transition-all hover:brightness-110 active:scale-[0.99]"
+          onClick={handleCommit}
+          disabled={!canSubmit}
+          className={cn(
+            'mt-5 w-full rounded-lg bg-gradient-to-b from-orange-primary to-orange-deep py-3 font-mono text-xs font-medium uppercase tracking-wider text-text-primary shadow-glow transition-all hover:brightness-110 active:scale-[0.99]',
+            !canSubmit && 'cursor-not-allowed opacity-50 hover:brightness-100',
+          )}
         >
-          Commit Order
+          {isSubmitting ? 'Submitting…' : 'Commit Order'}
         </button>
       </GlassCard>
 
