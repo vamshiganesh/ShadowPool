@@ -9,7 +9,6 @@ interface TradeState {
   side: OrderSide
   price: string
   amount: string
-  commitmentHash: string
   activeLifecycleStage: LifecycleStageId
   depthResolution: DepthResolution
   commitmentDrawerOpen: boolean
