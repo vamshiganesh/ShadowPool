@@ -29,7 +29,6 @@ export const useTradeStore = create<TradeState>((set) => ({
   side: 'buy',
   price: '3,421.50',
   amount: '2.50',
-  commitmentHash: '0xEbf9…b8AE',
   activeLifecycleStage: DEFAULT_ACTIVE_STAGE,
   depthResolution: '1',
   commitmentDrawerOpen: false,

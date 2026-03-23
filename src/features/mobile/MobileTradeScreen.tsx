@@ -1,9 +1,12 @@
+import { useEffect } from 'react'
 import { useTradeStore } from '@/store/tradeStore'
 import { MARKET_PAIR } from '@/features/trade/data/mockMarket'
 import { MOCK_SETTLEMENTS } from '@/features/trade/data/mockSettlements'
 import { CommitmentHashBox } from '@/components/trading/CommitmentHashBox'
 import { LifecycleStepper } from '@/components/trading/LifecycleStepper'
 import { StatusPill } from '@/components/ui/StatusPill'
+import { useCommitment } from '@/lib/crypto/useCommitment'
+import { useSubmitCommitment } from '@/lib/contracts/useOrderBook'
 import { cn } from '@/lib/utils/cn'
 import {
   ArrowLeftRight,
@@ -27,13 +30,28 @@ export function MobileTradeScreen() {
     side,
     price,
     amount,
-    commitmentHash,
     activeLifecycleStage,
     setSide,
     openCommitmentDrawer,
   } = useTradeStore()
 
+  const { hash, isComputing } = useCommitment(amount, price)
+  const { submit, isPending, isConfirming, isSuccess } = useSubmitCommitment()
+
+  useEffect(() => {
+    if (isSuccess) {
+      openCommitmentDrawer()
+    }
+  }, [isSuccess, openCommitmentDrawer])
+
   const total = (parseFloat(price.replace(/,/g, '')) * parseFloat(amount)).toFixed(2)
+  const isSubmitting = isPending || isConfirming
+  const canSubmit = Boolean(hash) && !isComputing && !isSubmitting
+
+  const handleCommit = async () => {
+    if (!canSubmit || !hash) return
+    await submit(hash, amount)
+  }
 
   return (
     <div className="flex h-full flex-col bg-bg-base">
@@ -101,15 +119,19 @@ export function MobileTradeScreen() {
             <MobileField label="Price" value={price} />
             <MobileField label="Amount" value={`${amount} ETH`} />
             <MobileField label="Total" value={`${total} USDC`} />
-            <CommitmentHashBox hash={commitmentHash} />
+            <CommitmentHashBox hash={hash} isComputing={isComputing} />
           </div>
 
           <button
             type="button"
-            onClick={openCommitmentDrawer}
-            className="mt-4 w-full rounded-lg bg-gradient-to-b from-orange-primary to-orange-deep py-3 font-mono text-[11px] uppercase tracking-wider text-text-primary"
+            onClick={handleCommit}
+            disabled={!canSubmit}
+            className={cn(
+              'mt-4 w-full rounded-lg bg-gradient-to-b from-orange-primary to-orange-deep py-3 font-mono text-[11px] uppercase tracking-wider text-text-primary',
+              !canSubmit && 'cursor-not-allowed opacity-50',
+            )}
           >
-            Commit Order
+            {isSubmitting ? 'Submitting…' : 'Commit Order'}
           </button>
         </div>
 
