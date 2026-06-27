@@ -7,7 +7,7 @@ interface LightRaysProps {
 export function LightRays({ className }: LightRaysProps) {
   return (
     <div
-      className={cn('pointer-events-none fixed inset-x-0 top-0 z-0 h-[60vh] overflow-hidden', className)}
+      className={cn('pointer-events-none absolute inset-x-0 top-0 h-full overflow-hidden', className)}
       aria-hidden="true"
     >
       <svg

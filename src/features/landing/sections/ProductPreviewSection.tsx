@@ -4,57 +4,59 @@ import { TradingAppPreview } from '@/features/landing/TradingAppPreview'
 import { Container } from '@/components/ui/Container'
 
 export function ProductPreviewSection() {
-  const sectionRef = useRef<HTMLElement>(null)
+  const previewRef = useRef<HTMLDivElement>(null)
   const reduceMotion = useReducedMotion()
 
+  // 0 → preview enters from below; 1 → preview center aligns with viewport center
   const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ['start end', 'end start'],
+    target: previewRef,
+    offset: ['start end', 'center center'],
   })
 
   const rotateX = useTransform(
     scrollYProgress,
-    [0, 0.45, 0.75],
-    reduceMotion ? [0, 0, 0] : [34, 8, 0],
+    [0, 1],
+    reduceMotion ? [0, 0] : [16, 0],
   )
   const scale = useTransform(
     scrollYProgress,
-    [0, 0.45, 0.75],
-    reduceMotion ? [1, 1, 1] : [0.86, 0.94, 1],
+    [0, 1],
+    reduceMotion ? [1, 1] : [0.94, 1],
   )
   const y = useTransform(
     scrollYProgress,
-    [0, 0.45, 0.75],
-    reduceMotion ? [0, 0, 0] : [72, 28, 0],
+    [0, 1],
+    reduceMotion ? [0, 0] : [32, 0],
   )
-  const opacity = useTransform(scrollYProgress, [0, 0.2], reduceMotion ? [1, 1] : [0.55, 1])
+  const opacity = useTransform(
+    scrollYProgress,
+    [0, 0.35],
+    reduceMotion ? [1, 1] : [0.6, 1],
+  )
 
   return (
     <section
-      ref={sectionRef}
-      className="relative -mt-6 h-[145vh] sm:h-[135vh] lg:h-[125vh]"
+      className="relative -mt-6 pb-20 pt-4 sm:pb-24 lg:pb-28"
       aria-label="Product preview"
     >
-      <div className="sticky top-[10vh] z-10 pb-16 pt-2 sm:top-[12vh] lg:top-[14vh]">
-        <Container className="[perspective:1400px]">
-          <motion.div
-            style={{
-              rotateX,
-              scale,
-              y,
-              opacity,
-              transformPerspective: 1400,
-              transformStyle: 'preserve-3d',
-            }}
-            className="origin-[center_80%] will-change-transform"
-          >
-            <TradingAppPreview />
-          </motion.div>
-        </Container>
-      </div>
+      <Container className="[perspective:1200px]">
+        <motion.div
+          ref={previewRef}
+          style={{
+            rotateX,
+            scale,
+            y,
+            opacity,
+            transformPerspective: 1200,
+          }}
+          className="origin-[center_85%] will-change-transform [transform:translateZ(0)]"
+        >
+          <TradingAppPreview surface="solid" />
+        </motion.div>
+      </Container>
 
       <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-bg-base"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-bg-base"
         aria-hidden="true"
       />
     </section>

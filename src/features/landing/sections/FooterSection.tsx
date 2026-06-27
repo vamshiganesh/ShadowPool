@@ -22,7 +22,7 @@ export function FooterSection() {
               </span>
             </div>
             <p className="font-mono text-[10px] uppercase tracking-wider text-text-faint">
-              © 2024 {APP_NAME} ZK Protocol
+              © 2026 {APP_NAME} ZK Protocol
             </p>
           </div>
         </Container>

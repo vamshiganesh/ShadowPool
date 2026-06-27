@@ -2,17 +2,23 @@ import { ArrowLeftRight, TrendingDown, TrendingUp } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { StatusPill } from '@/components/ui/StatusPill'
 import { InlineCodePill } from '@/components/ui/InlineCodePill'
-import { useSettlementFeed } from '@/lib/protocol/hooks/useProtocolData'
-import { useMarketData } from '@/lib/protocol/hooks/useMarketData'
+import {
+  LANDING_PREVIEW_BUY_DEPTH,
+  LANDING_PREVIEW_MARKET,
+  LANDING_PREVIEW_SELL_DEPTH,
+  LANDING_PREVIEW_SETTLEMENT_ROWS,
+} from '@/features/landing/data/landingPreviewData'
 
 interface TradingAppPreviewProps {
   className?: string
+  surface?: 'glass' | 'solid'
 }
 
-export function TradingAppPreview({ className }: TradingAppPreviewProps) {
-  const { rows } = useSettlementFeed()
-  const { market, buyDepth, sellDepth } = useMarketData()
-  const previewRows = rows.slice(0, 3)
+export function TradingAppPreview({ className, surface = 'glass' }: TradingAppPreviewProps) {
+  const market = LANDING_PREVIEW_MARKET
+  const buyDepth = LANDING_PREVIEW_BUY_DEPTH
+  const sellDepth = LANDING_PREVIEW_SELL_DEPTH
+  const previewRows = LANDING_PREVIEW_SETTLEMENT_ROWS
   const isNegative = market.change24h < 0
 
   return (
@@ -26,7 +32,14 @@ export function TradingAppPreview({ className }: TradingAppPreviewProps) {
         aria-hidden="true"
       />
 
-      <div className="glass-surface-strong overflow-hidden rounded-2xl border border-border-default shadow-[0_24px_80px_rgba(0,0,0,0.6)]">
+      <div
+        className={cn(
+          'overflow-hidden rounded-2xl border border-border-default shadow-[0_24px_80px_rgba(0,0,0,0.6)]',
+          surface === 'solid'
+            ? 'bg-bg-surface'
+            : 'glass-surface-strong',
+        )}
+      >
         <div className="flex items-center justify-between border-b border-border-subtle px-4 py-3">
           <div className="flex items-center gap-3">
             <div className="flex gap-1.5">
@@ -40,7 +53,7 @@ export function TradingAppPreview({ className }: TradingAppPreviewProps) {
           </div>
           <div className="flex items-center gap-4 font-mono text-[11px]">
             <span className="text-text-muted">{market.label}</span>
-            <span className="text-text-primary transition-all duration-500">
+            <span className="text-text-primary">
               {market.lastPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}
             </span>
             <span className={cn('flex items-center gap-1', isNegative ? 'text-red-400' : 'text-emerald-400')}>
@@ -195,7 +208,7 @@ function PreviewDepthChart({
 
   return (
     <div className="relative h-36 overflow-hidden rounded-xl border border-border-subtle bg-bg-elevated/40">
-      <svg viewBox="0 0 400 120" className="h-full w-full transition-all duration-700" preserveAspectRatio="none">
+      <svg viewBox="0 0 400 120" className="h-full w-full" preserveAspectRatio="none">
         <defs>
           <linearGradient id="buyGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="rgba(74, 222, 128, 0.25)" />
@@ -209,16 +222,14 @@ function PreviewDepthChart({
         <path
           d={`M200,120 L${buyPoints.join(' L')} L0,120 Z`}
           fill="url(#buyGrad)"
-          className="transition-all duration-700"
         />
         <path
           d={`M200,120 L${sellPoints.join(' L')} L400,120 Z`}
           fill="url(#sellGrad)"
-          className="transition-all duration-700"
         />
         <line x1="200" y1="0" x2="200" y2="120" stroke="rgba(245,240,238,0.08)" />
       </svg>
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-pill border border-border-subtle bg-bg-base/90 px-3 py-1 font-mono text-xs text-text-primary transition-all duration-500">
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-pill border border-border-subtle bg-bg-base/90 px-3 py-1 font-mono text-xs text-text-primary">
         {midPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}
       </div>
     </div>

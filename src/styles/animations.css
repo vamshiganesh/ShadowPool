@@ -74,6 +74,32 @@
   );
 }
 
+@keyframes stats-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(4px, -8px, 0);
+  }
+}
+
+@keyframes landing-particle-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  25% {
+    transform: translate3d(var(--drift-x1, 24px), var(--drift-y1, -32px), 0);
+  }
+  50% {
+    transform: translate3d(var(--drift-x2, -28px), var(--drift-y2, -48px), 0);
+  }
+  75% {
+    transform: translate3d(var(--drift-x3, 20px), var(--drift-y3, -16px), 0);
+  }
+}
+
 @keyframes slow-float {
   0%,
   100% {
@@ -86,10 +112,10 @@
 
 @keyframes ticker-scroll {
   0% {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
   100% {
-    transform: translateX(-50%);
+    transform: translate3d(-50%, 0, 0);
   }
 }
 
@@ -116,6 +142,15 @@
   animation: beam-rotate-from 14s linear infinite;
 }
 
+.animate-stats-drift {
+  animation: stats-drift 18s ease-in-out infinite;
+}
+
+.animate-landing-particle {
+  animation: landing-particle-drift var(--drift-duration, 32s) ease-in-out infinite;
+  will-change: transform;
+}
+
 .animate-slow-float {
   animation: slow-float 8s ease-in-out infinite;
 }
@@ -132,6 +167,8 @@
   .animate-pulse-glow,
   .animate-beam-rotate,
   .animate-beam-rotate-slow,
+  .animate-stats-drift,
+  .animate-landing-particle,
   .animate-slow-float,
   .animate-ticker-scroll {
     animation: none;

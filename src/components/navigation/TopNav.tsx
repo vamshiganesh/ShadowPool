@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils/cn'
 
 interface TopNavProps {
   variant?: 'marketing' | 'docs'
+  opaque?: boolean
 }
 
 type NavLink = (typeof NAV_LINKS.marketing)[number] | (typeof NAV_LINKS.docs)[number]
@@ -75,17 +76,19 @@ function LaunchCta({ className }: { className?: string }) {
   )
 }
 
-export function TopNav({ variant = 'marketing' }: TopNavProps) {
+export function TopNav({ variant = 'marketing', opaque = false }: TopNavProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const links = variant === 'docs' ? NAV_LINKS.docs : NAV_LINKS.marketing
 
   return (
-    <header className="sticky top-0 z-50 px-4 pt-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 pt-4">
       <Container>
         <nav
           className={cn(
             'relative flex items-center justify-between gap-4 rounded-xl px-4 py-2.5 sm:px-5',
-            'glass-surface-strong shadow-[0_8px_32px_rgba(0,0,0,0.35)]',
+            opaque
+              ? 'border border-border-subtle bg-bg-elevated/95 shadow-[0_8px_32px_rgba(0,0,0,0.35)]'
+              : 'glass-surface-strong shadow-[0_8px_32px_rgba(0,0,0,0.35)]',
           )}
           aria-label="Main"
         >

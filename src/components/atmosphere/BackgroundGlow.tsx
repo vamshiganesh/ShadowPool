@@ -16,7 +16,7 @@ export function BackgroundGlow({ className, intensity = 'default' }: BackgroundG
 
   return (
     <div
-      className={cn('pointer-events-none fixed inset-0 z-0', className)}
+      className={cn('pointer-events-none absolute inset-0', className)}
       aria-hidden="true"
     >
       <div
