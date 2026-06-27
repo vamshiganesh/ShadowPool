@@ -1,14 +1,22 @@
-import { ORDER_SUMMARY } from '@/features/orders/data/mockOrders'
 import { cn } from '@/lib/utils/cn'
 
-const METRICS = [
-  { label: 'Total Orders', value: ORDER_SUMMARY.totalOrders, key: 'orders' },
-  { label: 'Total Volume', value: ORDER_SUMMARY.totalVolume, key: 'volume' },
-  { label: 'Avg Proof Time', value: ORDER_SUMMARY.avgProofTime, key: 'proof' },
-  { label: 'Settlement Rate', value: ORDER_SUMMARY.settlementRate, key: 'rate' },
-] as const
+interface OrdersSummaryStripProps {
+  summary: {
+    totalOrders: number | string
+    totalVolume: string
+    avgProofTime: string
+    settlementRate: string
+  }
+}
 
-export function OrdersSummaryStrip() {
+export function OrdersSummaryStrip({ summary }: OrdersSummaryStripProps) {
+  const METRICS = [
+    { label: 'Total Orders', value: String(summary.totalOrders), key: 'orders' },
+    { label: 'Total Volume', value: summary.totalVolume, key: 'volume' },
+    { label: 'Avg Proof Time', value: summary.avgProofTime, key: 'proof' },
+    { label: 'Settlement Rate', value: summary.settlementRate, key: 'rate' },
+  ] as const
+
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       {METRICS.map((m) => (

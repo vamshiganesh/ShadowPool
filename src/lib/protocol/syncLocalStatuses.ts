@@ -1,0 +1,75 @@
+import { createPublicClient, http } from 'viem'
+import { sepolia } from 'viem/chains'
+import { ORDER_BOOK_ABI, ORDER_STATUS } from '@/lib/contracts/abis'
+import { addresses } from '@/lib/contracts/addresses'
+import { loadLocalCommitments } from '@/lib/protocol/localCommitments'
+import type { ChainCommitment } from '@/lib/protocol/types'
+
+const readClient = createPublicClient({
+  chain: sepolia,
+  transport: http(
+    import.meta.env.VITE_SEPOLIA_RPC_URL ||
+      import.meta.env.VITE_INDEXER_RPC_URL ||
+      'https://ethereum-sepolia-rpc.publicnode.com',
+  ),
+})
+
+function mapOnChainStatus(code: number): ChainCommitment['status'] {
+  if (code === ORDER_STATUS.Settled) return 'settled'
+  if (code === ORDER_STATUS.Cancelled) return 'cancelled'
+  return 'onchain'
+}
+
+/**
+ * Sync wallet-local commitments via cheap per-hash eth_call reads.
+ * Avoids eth_getLogs entirely — works on Alchemy free tier.
+ */
+export async function syncLocalCommitmentStatuses(): Promise<ChainCommitment[]> {
+  const local = loadLocalCommitments()
+  const results: ChainCommitment[] = []
+
+  for (const meta of local) {
+    if (!meta.txHash) continue
+
+    try {
+      const [statusCode, escrowResult] = await Promise.all([
+        readClient.readContract({
+          address: addresses.orderBook,
+          abi: ORDER_BOOK_ABI,
+          functionName: 'statusOf',
+          args: [meta.hash],
+        }),
+        readClient
+          .readContract({
+            address: addresses.orderBook,
+            abi: ORDER_BOOK_ABI,
+            functionName: 'getEscrow',
+            args: [meta.hash],
+          })
+          .catch(() => null),
+      ])
+
+      if (statusCode === ORDER_STATUS.None) continue
+
+      const trader =
+        (escrowResult?.[0] as `0x${string}` | undefined) ??
+        meta.trader ??
+        ('0x0000000000000000000000000000000000000000' as `0x${string}`)
+      const escrowWei = escrowResult?.[1] ?? 0n
+
+      results.push({
+        hash: meta.hash,
+        trader,
+        blockNumber: 0n,
+        txHash: meta.txHash,
+        escrowWei,
+        status: mapOnChainStatus(Number(statusCode)),
+        blockTimestamp: meta.submittedAt,
+      })
+    } catch {
+      /* skip unreachable entries */
+    }
+  }
+
+  return results
+}

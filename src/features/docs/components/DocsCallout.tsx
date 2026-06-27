@@ -8,6 +8,7 @@ interface DocsCalloutProps {
   title: string
   children: ReactNode
   variant?: CalloutVariant
+  className?: string
 }
 
 const variantStyles = {
@@ -31,7 +32,7 @@ const variantStyles = {
   },
 }
 
-export function DocsCallout({ title, children, variant = 'warning' }: DocsCalloutProps) {
+export function DocsCallout({ title, children, variant = 'warning', className }: DocsCalloutProps) {
   const style = variantStyles[variant]
   const Icon = style.icon
 
@@ -41,6 +42,7 @@ export function DocsCallout({ title, children, variant = 'warning' }: DocsCallou
         'rounded-xl border p-5',
         style.border,
         style.bg,
+        className,
       )}
     >
       <div className="flex gap-3">

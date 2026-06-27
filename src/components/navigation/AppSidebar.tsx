@@ -1,5 +1,7 @@
 import { NavLink, Link } from 'react-router-dom'
 import { Activity, ArrowLeftRight, LayoutList } from 'lucide-react'
+import { useAccount } from 'wagmi'
+import { sepolia } from 'wagmi/chains'
 import { APP_NAME, NAV_LINKS, ROUTES } from '@/lib/constants/routes'
 import { WalletChip } from '@/components/navigation/WalletChip'
 import { cn } from '@/lib/utils/cn'
@@ -10,8 +12,10 @@ const iconMap = {
   stats: Activity,
 } as const
 
-
 export function AppSidebar() {
+  const { chain } = useAccount()
+  const networkName = chain?.name ?? sepolia.name
+
   return (
     <aside className="hidden h-full w-[15.5rem] shrink-0 flex-col border-r border-border-subtle glass-surface lg:flex">
       <div className="flex h-[4.25rem] items-center border-b border-border-subtle px-5">
@@ -50,7 +54,7 @@ export function AppSidebar() {
         <WalletChip />
         <div className="rounded-lg glass-surface-light px-3 py-2.5">
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-faint">Network</p>
-          <p className="mt-1 text-xs text-text-secondary">Ethereum Mainnet</p>
+          <p className="mt-1 text-xs text-text-secondary">{networkName}</p>
         </div>
       </div>
     </aside>

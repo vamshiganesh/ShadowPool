@@ -12,11 +12,66 @@
 
 @keyframes beam-rotate {
   from {
-    transform: rotate(0deg);
+    rotate: 0deg;
   }
   to {
-    transform: rotate(360deg);
+    rotate: 360deg;
   }
+}
+
+@keyframes beam-rotate-from {
+  from {
+    rotate: var(--beam-start, 0deg);
+  }
+  to {
+    rotate: calc(var(--beam-start, 0deg) + 360deg);
+  }
+}
+
+@property --mask-sweep {
+  syntax: '<angle>';
+  initial-value: 42deg;
+  inherits: false;
+}
+
+/* Idle: small traveling arc */
+.beam-layer {
+  --beam-trail: 318deg;
+  --beam-spread: 42deg;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent var(--beam-trail),
+    rgba(255, 228, 200, 0.98) var(--beam-trail),
+    rgba(196, 57, 15, 1) calc(var(--beam-trail) + var(--beam-spread) * 0.5),
+    rgba(183, 102, 83, 0.95) calc(var(--beam-trail) + var(--beam-spread) - 6deg),
+    rgba(255, 228, 200, 0.98) calc(var(--beam-trail) + var(--beam-spread))
+  );
+}
+
+/* Hover: full ring revealed clockwise via mask sweep (driven by JS rAF) */
+.beam-hover-ring {
+  --mask-sweep: 42deg;
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 228, 200, 0.98) 0deg,
+    rgba(196, 57, 15, 1) 90deg,
+    rgba(183, 102, 83, 0.95) 180deg,
+    rgba(255, 228, 200, 0.98) 270deg,
+    rgba(196, 57, 15, 1) 360deg
+  );
+  -webkit-mask-image: conic-gradient(
+    from 318deg,
+    #000 0deg,
+    #000 var(--mask-sweep),
+    transparent var(--mask-sweep)
+  );
+  mask-image: conic-gradient(
+    from 318deg,
+    #000 0deg,
+    #000 var(--mask-sweep),
+    transparent var(--mask-sweep)
+  );
 }
 
 @keyframes slow-float {
@@ -54,7 +109,11 @@
 }
 
 .animate-beam-rotate {
-  animation: beam-rotate 5s linear infinite;
+  animation: beam-rotate 4s linear infinite;
+}
+
+.animate-beam-rotate-slow {
+  animation: beam-rotate-from 14s linear infinite;
 }
 
 .animate-slow-float {
@@ -72,6 +131,7 @@
 @media (prefers-reduced-motion: reduce) {
   .animate-pulse-glow,
   .animate-beam-rotate,
+  .animate-beam-rotate-slow,
   .animate-slow-float,
   .animate-ticker-scroll {
     animation: none;

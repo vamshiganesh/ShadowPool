@@ -14,4 +14,4 @@ export const LIFECYCLE_STAGES: LifecycleStage[] = [
   { id: 'settled', label: 'Settled', sublabel: 'Atomic execution' },
 ]
 
-export const DEFAULT_ACTIVE_STAGE: LifecycleStageId = 'matched'
+export const DEFAULT_ACTIVE_STAGE: LifecycleStageId = 'created'

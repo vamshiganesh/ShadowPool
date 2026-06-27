@@ -1,4 +1,5 @@
 import { LANDING_TICKER } from '@/lib/constants/protocol'
+import { useLandingTickerItems } from '@/lib/protocol/hooks/useProtocolData'
 import { TickerStrip } from '@/components/ui/TickerStrip'
 import { cn } from '@/lib/utils/cn'
 
@@ -7,7 +8,10 @@ interface LandingTickerSectionProps {
 }
 
 export function LandingTickerSection({ className }: LandingTickerSectionProps) {
-  const items = LANDING_TICKER.map((item) => ({
+  const liveItems = useLandingTickerItems()
+  const source = liveItems ?? LANDING_TICKER
+
+  const items = source.map((item) => ({
     key: `${item.type}-${item.value}`,
     content: (
       <>
@@ -20,7 +24,9 @@ export function LandingTickerSection({ className }: LandingTickerSectionProps) {
         <span
           className={cn(
             'font-mono text-[11px] uppercase tracking-wider',
-            item.status === 'PENDING' ? 'text-amber-400/80' : 'text-text-muted',
+            item.status === 'PENDING' || item.status === 'OPEN'
+              ? 'text-amber-400/80'
+              : 'text-text-muted',
           )}
         >
           {item.status}

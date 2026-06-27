@@ -1,11 +1,12 @@
-import { useEffect } from 'react'
 import type { ReactNode } from 'react'
+import { useAccount } from 'wagmi'
 import { useTradeStore } from '@/store/tradeStore'
 import { GlassCard } from '@/components/ui/GlassCard'
 import { CommitmentHashBox } from '@/components/trading/CommitmentHashBox'
 import { LifecycleStepper } from '@/components/trading/LifecycleStepper'
 import { useCommitment } from '@/lib/crypto/useCommitment'
 import { useSubmitCommitment } from '@/lib/contracts/useOrderBook'
+import { useActiveCommitmentLifecycle } from '@/lib/hooks/useActiveCommitmentLifecycle'
 import { cn } from '@/lib/utils/cn'
 
 export function OrderEntryPanel() {
@@ -17,21 +18,24 @@ export function OrderEntryPanel() {
     setSide,
     setPrice,
     setAmount,
-    openCommitmentDrawer,
   } = useTradeStore()
 
-  const { hash, isComputing, error } = useCommitment(amount, price)
-  const { submit, isPending, isConfirming, isSuccess } = useSubmitCommitment()
-
-  useEffect(() => {
-    if (isSuccess) {
-      openCommitmentDrawer()
-    }
-  }, [isSuccess, openCommitmentDrawer])
+  const { address } = useAccount()
+  const { hash, isComputing, error, nonce, salt } = useCommitment(amount, price)
+  useActiveCommitmentLifecycle(hash)
+  const { submit, isPending, isConfirming } = useSubmitCommitment()
 
   const handleCommit = async () => {
     if (!hash || isComputing || isPending || isConfirming) return
-    await submit(hash, amount)
+    await submit({
+      hash: hash as `0x${string}`,
+      side,
+      price,
+      amount,
+      nonce: nonce.toString(),
+      salt: salt.toString(),
+      trader: address,
+    })
   }
 
   const isSubmitting = isPending || isConfirming
@@ -69,6 +73,9 @@ export function OrderEntryPanel() {
             }
           />
           <CommitmentHashBox hash={hash} isComputing={isComputing} />
+          <p className="font-mono text-[9px] leading-relaxed text-text-faint">
+            Poseidon hash (browser-side, circomlibjs) — binds amount, price, nonce &amp; salt.
+          </p>
           {error && (
             <p className="font-mono text-[10px] text-red-400">{error}</p>
           )}

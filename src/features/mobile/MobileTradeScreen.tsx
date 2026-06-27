@@ -1,12 +1,13 @@
-import { useEffect } from 'react'
+import { useAccount } from 'wagmi'
 import { useTradeStore } from '@/store/tradeStore'
-import { MARKET_PAIR } from '@/features/trade/data/mockMarket'
-import { MOCK_SETTLEMENTS } from '@/features/trade/data/mockSettlements'
 import { CommitmentHashBox } from '@/components/trading/CommitmentHashBox'
 import { LifecycleStepper } from '@/components/trading/LifecycleStepper'
 import { StatusPill } from '@/components/ui/StatusPill'
 import { useCommitment } from '@/lib/crypto/useCommitment'
 import { useSubmitCommitment } from '@/lib/contracts/useOrderBook'
+import { useSettlementFeed } from '@/lib/protocol/hooks/useProtocolData'
+import { useMarketData } from '@/lib/protocol/hooks/useMarketData'
+import { useActiveCommitmentLifecycle } from '@/lib/hooks/useActiveCommitmentLifecycle'
 import { cn } from '@/lib/utils/cn'
 import {
   ArrowLeftRight,
@@ -32,17 +33,14 @@ export function MobileTradeScreen() {
     amount,
     activeLifecycleStage,
     setSide,
-    openCommitmentDrawer,
   } = useTradeStore()
 
-  const { hash, isComputing } = useCommitment(amount, price)
-  const { submit, isPending, isConfirming, isSuccess } = useSubmitCommitment()
-
-  useEffect(() => {
-    if (isSuccess) {
-      openCommitmentDrawer()
-    }
-  }, [isSuccess, openCommitmentDrawer])
+  const { market } = useMarketData()
+  const { rows: settlementRows } = useSettlementFeed()
+  const { address } = useAccount()
+  const { hash, isComputing, nonce, salt } = useCommitment(amount, price)
+  useActiveCommitmentLifecycle(hash)
+  const { submit, isPending, isConfirming } = useSubmitCommitment()
 
   const total = (parseFloat(price.replace(/,/g, '')) * parseFloat(amount)).toFixed(2)
   const isSubmitting = isPending || isConfirming
@@ -50,7 +48,15 @@ export function MobileTradeScreen() {
 
   const handleCommit = async () => {
     if (!canSubmit || !hash) return
-    await submit(hash, amount)
+    await submit({
+      hash: hash as `0x${string}`,
+      side,
+      price,
+      amount,
+      nonce: nonce.toString(),
+      salt: salt.toString(),
+      trader: address,
+    })
   }
 
   return (
@@ -80,15 +86,15 @@ export function MobileTradeScreen() {
         <div className="mb-4">
           <div className="flex items-baseline gap-2">
             <span className="font-heading text-3xl font-semibold tracking-tight text-text-primary">
-              {MARKET_PAIR.lastPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              {market.lastPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}
             </span>
             <span className="flex items-center gap-0.5 rounded-pill bg-red-500/15 px-2 py-0.5 font-mono text-[10px] text-red-400">
               <TrendingDown className="h-3 w-3" />
-              {MARKET_PAIR.change24h}%
+              {market.change24h}%
             </span>
           </div>
           <p className="mt-1 font-mono text-[11px] text-text-faint">
-            Vol {MARKET_PAIR.volume24h} ETH
+            Vol {market.volume24h} ETH
           </p>
         </div>
 
@@ -141,7 +147,7 @@ export function MobileTradeScreen() {
             Settlements
           </p>
           <div className="space-y-1.5">
-            {MOCK_SETTLEMENTS.slice(0, 3).map((row) => (
+            {settlementRows.slice(0, 3).map((row) => (
               <div
                 key={row.id}
                 className="flex items-center justify-between rounded-lg border border-border-subtle bg-bg-elevated/40 px-3 py-2"

@@ -20,14 +20,14 @@ export const HOW_IT_WORKS_STEPS = [
     step: '01',
     title: 'Commit, Don\'t Broadcast',
     description:
-      'Order inputs are hashed into a Poseidon commitment. Intent never enters the public mempool — only an opaque cryptographic fingerprint is revealed.',
+      'Order inputs are hashed into a Poseidon commitment. Intent never enters the public mempool, only an opaque cryptographic fingerprint is revealed.',
     visual: 'code' as const,
   },
   {
     step: '02',
     title: 'Order Lands On-Chain',
     description:
-      'The commitment hash is submitted to the ShadowPool contract. On-chain observers see a hash — not price, size, or direction.',
+      'The commitment hash is submitted to the ShadowPool contract. On-chain observers see a hash, not price, size, or direction.',
     visual: 'hash' as const,
   },
   {
@@ -41,7 +41,7 @@ export const HOW_IT_WORKS_STEPS = [
     step: '04',
     title: 'Groth16 Proof Generated',
     description:
-      'A zero-knowledge proof demonstrates the match satisfies circuit constraints — valid inputs, correct pairing, no double-spend.',
+      'A zero-knowledge proof demonstrates the match satisfies circuit constraints, valid inputs, correct pairing, no double-spend.',
     visual: 'proof' as const,
   },
   {
@@ -54,12 +54,12 @@ export const HOW_IT_WORKS_STEPS = [
 ] as const
 
 export const LIFECYCLE_STAGES = [
-  { id: 'created', label: 'Created', status: 'complete' as const },
-  { id: 'onchain', label: 'On-Chain', status: 'complete' as const },
-  { id: 'matched', label: 'Matched', status: 'active' as const },
-  { id: 'proof', label: 'Proof Gen', status: 'pending' as const },
-  { id: 'verified', label: 'Verified', status: 'pending' as const },
-  { id: 'settled', label: 'Settled', status: 'pending' as const },
+  { id: 'created', label: 'Created' },
+  { id: 'onchain', label: 'On-Chain' },
+  { id: 'matched', label: 'Matched' },
+  { id: 'proof', label: 'Proof Gen' },
+  { id: 'verified', label: 'Verified' },
+  { id: 'settled', label: 'Settled' },
 ] as const
 
 export const COMMITMENT_CODE = `fn generate_commitment(

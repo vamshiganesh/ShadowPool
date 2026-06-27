@@ -5,6 +5,13 @@ libs = ["lib"]
 solc = "0.8.24"
 optimizer = true
 optimizer_runs = 200
+fs_permissions = [{ access = "read-write", path = "../shared" }]
+
+
+[lint]
+# Verifier.sol uses snarkjs-generated constant names (alphax, betax1, IC0x, …).
+# Renaming them would require regenerating the verifier — intentionally skipped.
+exclude_lints = ["screaming-snake-case-const", "screaming-snake-case-immutable", "asm-keccak256", "unsafe-cheatcode"]
 
 [rpc_endpoints]
 sepolia = "${SEPOLIA_RPC_URL}"

@@ -8,9 +8,17 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      // circomlibjs pulls Node's assert — provide a browser shim.
+      assert: path.resolve(__dirname, './src/lib/shims/assert.ts'),
+      buffer: 'buffer',
     },
   },
   optimizeDeps: {
-    exclude: ['circomlibjs'],
+    // Pre-bundle CJS deps from circomlibjs so default-import interop works in dev.
+    include: ['buffer', 'circomlibjs', 'blake2b', 'blake-hash'],
+    needsInterop: ['buffer', 'blake2b', 'blake-hash'],
+  },
+  define: {
+    global: 'globalThis',
   },
 })

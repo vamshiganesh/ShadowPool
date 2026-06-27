@@ -1,4 +1,4 @@
-import { PROTOCOL_TICKER } from '@/lib/constants/protocol'
+import { useProtocolTickerItems } from '@/lib/protocol/hooks/useProtocolData'
 import { TickerStrip } from '@/components/ui/TickerStrip'
 import { cn } from '@/lib/utils/cn'
 
@@ -7,7 +7,9 @@ interface ProtocolTickerProps {
 }
 
 export function ProtocolTicker({ className }: ProtocolTickerProps) {
-  const items = PROTOCOL_TICKER.map((item) => ({
+  const tickerItems = useProtocolTickerItems()
+
+  const items = tickerItems.map((item) => ({
     key: item.label,
     content: (
       <>

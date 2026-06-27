@@ -12,6 +12,7 @@ export interface OrderRow {
   proofStatus: OrderProofStatus
   proofElapsed?: string
   settlementTx: string | null
+  commitmentHash?: `0x${string}`
 }
 
 export const MOCK_ORDERS: OrderRow[] = [

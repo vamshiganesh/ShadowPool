@@ -20,7 +20,7 @@ export interface ProofInspectorData {
 export const MOCK_PROOF: ProofInspectorData = {
   proofSystem: 'Groth16',
   circuit: 'shadowpool_match.circom',
-  constraints: 18432,
+  constraints: 1_746,
   blockHeight: 7234891,
   generationTime: '8.4s',
   verified: true,

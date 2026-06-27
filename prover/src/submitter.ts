@@ -8,6 +8,10 @@ const SETTLEMENT_ABI = [
   "function settle(uint256[2] pA, uint256[2][2] pB, uint256[2] pC, bytes32 commitmentA, bytes32 commitmentB, uint256 clearingPrice) external",
 ] as const;
 
+const VERIFIER_ABI = [
+  "function verifyProof(uint256[2] _pA, uint256[2][2] _pB, uint256[2] _pC, uint256[3] _pubSignals) view returns (bool)",
+] as const;
+
 function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) {
@@ -43,14 +47,29 @@ export async function submitSettlement(
     signer,
   );
 
-  const { pA, pB, pC } = await proofToSolidityCalldata(proof, publicSignals);
+  const calldata = await proofToSolidityCalldata(proof, publicSignals);
 
+  const verifier = new ethers.Contract(addresses.verifier, VERIFIER_ABI, signer);
+  const onChainValid = await verifier.verifyProof(
+    calldata.pA,
+    calldata.pB,
+    calldata.pC,
+    calldata.publicSignals,
+  );
+  if (!onChainValid) {
+    throw new Error(
+      "[submitter] On-chain verifier rejected proof. Regenerate contracts/src/Verifier.sol from " +
+        "circuits/build/shadowpool_match_final.zkey and redeploy the contract stack.",
+    );
+  }
+
+  console.log("[submitter] On-chain verifier pre-check OK.");
   console.log("[submitter] Submitting settlement tx to Sepolia...");
 
   const tx = await settlement.settle(
-    pA,
-    pB,
-    pC,
+    calldata.pA,
+    calldata.pB,
+    calldata.pC,
     pair.orderA.commitmentHash,
     pair.orderB.commitmentHash,
     pair.clearingPrice,

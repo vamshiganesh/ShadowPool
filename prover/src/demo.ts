@@ -5,6 +5,7 @@
  *   npm run prove:demo
  */
 import { runProver } from "./index";
+import { isSubmitOnChainEnabled } from "./env";
 import type { OrderCommitment } from "./types";
 
 // Same field values as circuits/test/input.json and circuits/scripts/compute_commitments.js
@@ -34,8 +35,7 @@ const DEMO_ORDERS: OrderCommitment[] = [
 ];
 
 async function main() {
-  const submitOnChain = process.env.SUBMIT_ON_CHAIN === "1";
-  await runProver(DEMO_ORDERS, { submit: submitOnChain });
+  await runProver(DEMO_ORDERS, { submit: isSubmitOnChainEnabled() });
 }
 
 // snarkjs spins up worker threads internally; they can outlive the promise

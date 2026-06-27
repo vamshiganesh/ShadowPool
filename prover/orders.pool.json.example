@@ -1,0 +1,18 @@
+[
+  {
+    "commitmentHash": "0xYOUR_BUY_COMMITMENT_HASH",
+    "assetAmount": "1000000000000000",
+    "limitPrice": "3421500000",
+    "nonce": "123456789012345678901234567890",
+    "salt": "987654321098765432109876543210",
+    "trader": "0xYourBuyWalletAddress"
+  },
+  {
+    "commitmentHash": "0xYOUR_SELL_COMMITMENT_HASH",
+    "assetAmount": "1000000000000000",
+    "limitPrice": "3421500000",
+    "nonce": "111111111111111111111111111111",
+    "salt": "222222222222222222222222222222",
+    "trader": "0xYourSellWalletAddress"
+  }
+]

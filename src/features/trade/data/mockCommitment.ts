@@ -27,7 +27,7 @@ export const MOCK_COMMITMENT: CommitmentDetail = {
   price: '3,421.50 USDC',
   notional: '8,553.75 USDC',
   provingSystem: 'Groth16_BN254',
-  constraints: 18432,
+  constraints: 1_746,
   rawProof: {
     pi_a: ['0x2c4f7e1a9b3d8c5f6a2e1d0c9b8a7f6e5d4c3b2a1', '0x8f3e2d1c0b9a8f7e6d5c4b3a2f1e0d9c8b7a6', '1'],
     pi_b: [

@@ -15,7 +15,7 @@ export function HowItWorksSection() {
         <SectionHeading
           eyebrow="How It Works"
           title="Privacy-first execution, cryptographically guaranteed."
-          description="A five-step path from private intent to verifiable on-chain settlement — preserving anonymity without sacrificing liquidity."
+          description="A five-step path from private intent to verifiable on-chain settlement, preserving anonymity without sacrificing liquidity."
           align="center"
           size="page"
           className="mb-16"

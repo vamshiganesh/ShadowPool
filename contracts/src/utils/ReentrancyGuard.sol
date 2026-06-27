@@ -13,9 +13,17 @@ abstract contract ReentrancyGuard {
     error ReentrantCall();
 
     modifier nonReentrant() {
+        _nonReentrantBefore();
+        _;
+        _nonReentrantAfter();
+    }
+
+    function _nonReentrantBefore() private {
         if (_status == _ENTERED) revert ReentrantCall();
         _status = _ENTERED;
-        _;
+    }
+
+    function _nonReentrantAfter() private {
         _status = _NOT_ENTERED;
     }
 }

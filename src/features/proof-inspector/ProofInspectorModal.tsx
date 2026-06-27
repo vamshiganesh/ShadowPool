@@ -1,9 +1,14 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { X, Copy, Download, ExternalLink } from 'lucide-react'
 import { useTradeStore } from '@/store/tradeStore'
+import { useProtocolEventStore } from '@/store/protocolEventStore'
 import { useOverlay } from '@/lib/hooks/useOverlay'
-import { MOCK_PROOF } from '@/features/trade/data/mockProof'
+import { CIRCUIT_META } from '@/lib/crypto/circuitMeta'
+import {
+  buildCommitmentDetail,
+  findSettlementForCommitment,
+} from '@/lib/protocol/buildCommitmentDetail'
 import { StatusPill } from '@/components/ui/StatusPill'
 import { MonoLabel } from '@/components/ui/MonoLabel'
 import { InfoRow } from '@/components/ui/InfoRow'
@@ -19,19 +24,57 @@ const TABS: { id: ProofTab; label: string }[] = [
   { id: 'circuit', label: 'Circuit Info' },
 ]
 
+async function copyText(text: string) {
+  try {
+    await navigator.clipboard.writeText(text)
+  } catch {
+    /* ignore */
+  }
+}
+
+function downloadJson(filename: string, data: unknown) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 export function ProofInspectorModal() {
-  const { proofInspectorOpen, closeProofInspector } = useTradeStore()
+  const { proofInspectorOpen, closeProofInspector, activeCommitment } = useTradeStore()
+  const commitments = useProtocolEventStore((s) => s.commitments)
+  const settlements = useProtocolEventStore((s) => s.settlements)
   const [activeTab, setActiveTab] = useState<ProofTab>('proof')
   const { handleBackdropClick, containerRef } = useOverlay({
     isOpen: proofInspectorOpen,
     onClose: closeProofInspector,
   })
 
-  const data = MOCK_PROOF
+  const detail = useMemo(() => {
+    if (!activeCommitment) return null
+    const chain = commitments.get(activeCommitment.hash.toLowerCase())
+    const settlement = findSettlementForCommitment(activeCommitment.hash, settlements)
+    return buildCommitmentDetail(activeCommitment, chain, settlement)
+  }, [activeCommitment, commitments, settlements])
+
+  const exportPayload = useMemo(() => {
+    if (!detail) return null
+    return {
+      commitmentHash: detail.hash,
+      circuit: CIRCUIT_META.name,
+      constraints: CIRCUIT_META.constraints,
+      publicSignals: detail.publicSignals,
+      proof: detail.rawProof,
+      status: detail.status,
+      txHash: detail.settlementTx,
+    }
+  }, [detail])
 
   return (
     <AnimatePresence>
-      {proofInspectorOpen && (
+      {proofInspectorOpen && detail && exportPayload && (
         <>
           <motion.div
             initial={{ opacity: 0 }}
@@ -60,21 +103,33 @@ export function ProofInspectorModal() {
               aria-labelledby="proof-inspector-title"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Top accent line */}
               <div className="h-px bg-gradient-to-r from-transparent via-orange-primary to-transparent" />
 
               <div className="flex items-start justify-between border-b border-border-subtle px-6 py-5">
                 <div>
-                  <h2 id="proof-inspector-title" className="font-heading text-sm font-semibold uppercase tracking-wide text-text-primary">
+                  <h2
+                    id="proof-inspector-title"
+                    className="font-heading text-sm font-semibold uppercase tracking-wide text-text-primary"
+                  >
                     Proof Inspector
                   </h2>
                   <p className="mt-1 font-mono text-[11px] text-orange-warm/80">
-                    {data.proofSystem} · {data.circuit} · {data.constraints.toLocaleString()} constraints
+                    {CIRCUIT_META.provingSystem} · {CIRCUIT_META.name} ·{' '}
+                    {CIRCUIT_META.constraints.toLocaleString()} constraints
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <StatusPill label="Verified" variant="success" />
-                    <StatusPill label={`Block ${data.blockHeight.toLocaleString()}`} variant="neutral" dot={false} />
-                    <StatusPill label={`${data.generationTime} Generation`} variant="pending" />
+                    <StatusPill
+                      label={detail.hasProof ? 'Verified' : 'Pending'}
+                      variant={detail.hasProof ? 'success' : 'neutral'}
+                    />
+                    {detail.blockHeight != null && (
+                      <StatusPill
+                        label={`Block ${detail.blockHeight.toLocaleString()}`}
+                        variant="neutral"
+                        dot={false}
+                      />
+                    )}
+                    <StatusPill label={detail.statusLabel} variant="pending" />
                   </div>
                 </div>
                 <button
@@ -87,7 +142,11 @@ export function ProofInspectorModal() {
                 </button>
               </div>
 
-              <div role="tablist" aria-label="Proof inspector sections" className="flex border-b border-border-subtle px-6">
+              <div
+                role="tablist"
+                aria-label="Proof inspector sections"
+                className="flex border-b border-border-subtle px-6"
+              >
                 {TABS.map((tab) => (
                   <button
                     key={tab.id}
@@ -116,31 +175,42 @@ export function ProofInspectorModal() {
               </div>
 
               <div className="min-h-0 flex-1 overflow-y-auto p-6">
-                {TABS.map((tab) => (
-                  <div
-                    key={tab.id}
-                    role="tabpanel"
-                    id={`proof-panel-${tab.id}`}
-                    aria-labelledby={`proof-tab-${tab.id}`}
-                    hidden={activeTab !== tab.id}
-                  >
-                    {tab.id === 'proof' && <ProofDataPanel data={data} />}
-                    {tab.id === 'signals' && <SignalsPanel signals={data.publicSignals} />}
-                    {tab.id === 'circuit' && <CircuitPanel data={data} />}
-                  </div>
-                ))}
+                {activeTab === 'proof' && (
+                  <ProofDataPanel rawProof={detail.rawProof} hasProof={detail.hasProof} />
+                )}
+                {activeTab === 'signals' && (
+                  <SignalsPanel signals={detail.publicSignals} />
+                )}
+                {activeTab === 'circuit' && <CircuitPanel />}
               </div>
 
               <div className="flex flex-wrap gap-3 border-t border-border-subtle p-5">
-                <GhostButton className="gap-2 border border-border-subtle">
+                <GhostButton
+                  type="button"
+                  className="gap-2 border border-border-subtle"
+                  onClick={() =>
+                    downloadJson(`shadowpool-commitment-${detail.hash.slice(2, 10)}.json`, exportPayload)
+                  }
+                >
                   <Download className="h-4 w-4" />
                   Download JSON
                 </GhostButton>
-                <GhostButton className="gap-2 border border-border-subtle">
+                <GhostButton
+                  type="button"
+                  className="gap-2 border border-border-subtle"
+                  onClick={() => copyText(detail.hash)}
+                >
                   <Copy className="h-4 w-4" />
                   Copy Hash
                 </GhostButton>
-                <BeamButton className="ml-auto gap-2">
+                <BeamButton
+                  type="button"
+                  className="ml-auto gap-2"
+                  disabled={!detail.etherscanUrl}
+                  onClick={() => {
+                    if (detail.etherscanUrl) window.open(detail.etherscanUrl, '_blank', 'noopener')
+                  }}
+                >
                   <ExternalLink className="h-4 w-4" />
                   View on Etherscan
                 </BeamButton>
@@ -153,23 +223,22 @@ export function ProofInspectorModal() {
   )
 }
 
-function ProofDataPanel({ data }: { data: typeof MOCK_PROOF }) {
+function ProofDataPanel({
+  rawProof,
+  hasProof,
+}: {
+  rawProof: Record<string, unknown> | null
+  hasProof: boolean
+}) {
   return (
     <div className="grid gap-5 lg:grid-cols-2">
       <div>
         <MonoLabel variant="muted" size="micro" className="mb-2 block">
-          Raw Proof Object
+          {hasProof ? 'Proof Metadata' : 'Proof Status'}
         </MonoLabel>
         <div className="relative rounded-xl border border-border-subtle bg-bg-base/80">
-          <button
-            type="button"
-            aria-label="Copy proof"
-            className="absolute right-3 top-3 text-text-faint hover:text-text-muted"
-          >
-            <Copy className="h-3.5 w-3.5" />
-          </button>
           <pre className="max-h-72 overflow-auto p-4 font-mono text-[10px] leading-relaxed text-text-muted">
-            {JSON.stringify(data.rawProof, null, 2)}
+            {JSON.stringify(rawProof, null, 2)}
           </pre>
         </div>
       </div>
@@ -179,13 +248,13 @@ function ProofDataPanel({ data }: { data: typeof MOCK_PROOF }) {
           <MonoLabel variant="muted" size="micro" className="mb-3 block">
             Verification Details
           </MonoLabel>
-          <InfoRow label="Proof System" value={data.proofSystem} mono />
-          <InfoRow label="Library" value={data.library} mono />
-          <InfoRow label="Curve" value={data.curve} mono />
-          <InfoRow label="Public Inputs" value={String(data.publicInputs)} mono />
+          <InfoRow label="Proof System" value={CIRCUIT_META.provingSystem} mono />
+          <InfoRow label="Library" value={`${CIRCUIT_META.library} v0.7.x`} mono />
+          <InfoRow label="Curve" value={CIRCUIT_META.curve} mono />
+          <InfoRow label="Public Inputs" value={String(CIRCUIT_META.publicInputs)} mono />
         </div>
 
-        <ConstraintBreakdown breakdown={data.constraintBreakdown} total={data.constraints} />
+        <ConstraintBreakdown />
       </div>
     </div>
   )
@@ -212,34 +281,29 @@ function SignalsPanel({ signals }: { signals: string[] }) {
   )
 }
 
-function CircuitPanel({ data }: { data: typeof MOCK_PROOF }) {
+function CircuitPanel() {
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-border-subtle glass-surface-light p-4">
-        <InfoRow label="Circuit" value={data.circuit} mono />
-        <InfoRow label="Constraints" value={data.constraints.toLocaleString()} mono />
-        <InfoRow label="Curve" value={data.curve} mono />
+        <InfoRow label="Circuit" value={CIRCUIT_META.name} mono />
+        <InfoRow label="Constraints" value={CIRCUIT_META.constraints.toLocaleString()} mono />
+        <InfoRow label="Curve" value={CIRCUIT_META.curve} mono />
         <InfoRow label="Protocol" value="groth16" mono />
       </div>
-      <ConstraintBreakdown breakdown={data.constraintBreakdown} total={data.constraints} />
+      <ConstraintBreakdown />
     </div>
   )
 }
 
-function ConstraintBreakdown({
-  breakdown,
-  total,
-}: {
-  breakdown: typeof MOCK_PROOF.constraintBreakdown
-  total: number
-}) {
+function ConstraintBreakdown() {
+  const total = CIRCUIT_META.constraints
   return (
     <div>
       <MonoLabel variant="muted" size="micro" className="mb-3 block">
         R1CS Constraint Breakdown — {total.toLocaleString()} Total
       </MonoLabel>
       <div className="flex h-2 overflow-hidden rounded-full">
-        {breakdown.map((item) => (
+        {CIRCUIT_META.constraintBreakdown.map((item) => (
           <div
             key={item.label}
             style={{
@@ -250,12 +314,9 @@ function ConstraintBreakdown({
         ))}
       </div>
       <div className="mt-3 grid grid-cols-2 gap-2">
-        {breakdown.map((item) => (
+        {CIRCUIT_META.constraintBreakdown.map((item) => (
           <div key={item.label} className="flex items-center gap-2">
-            <span
-              className="h-2 w-2 rounded-full"
-              style={{ backgroundColor: item.color }}
-            />
+            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
             <span className="font-mono text-[10px] text-text-muted">{item.label}</span>
           </div>
         ))}

@@ -1,24 +1,22 @@
-import { motion } from 'framer-motion'
 import { ArrowLeftRight, TrendingDown, TrendingUp } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { StatusPill } from '@/components/ui/StatusPill'
 import { InlineCodePill } from '@/components/ui/InlineCodePill'
-import { MOCK_SETTLEMENTS } from '@/features/trade/data/mockSettlements'
+import { useSettlementFeed } from '@/lib/protocol/hooks/useProtocolData'
+import { useMarketData } from '@/lib/protocol/hooks/useMarketData'
 
 interface TradingAppPreviewProps {
   className?: string
 }
 
-const PREVIEW_SETTLEMENTS = MOCK_SETTLEMENTS.slice(0, 3)
-
 export function TradingAppPreview({ className }: TradingAppPreviewProps) {
+  const { rows } = useSettlementFeed()
+  const { market, buyDepth, sellDepth } = useMarketData()
+  const previewRows = rows.slice(0, 3)
+  const isNegative = market.change24h < 0
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 32 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-      className={cn('relative mx-auto w-full max-w-4xl', className)}
-    >
+    <div className={cn('relative mx-auto w-full max-w-4xl', className)}>
       <div
         className="pointer-events-none absolute -inset-8 rounded-3xl opacity-40"
         style={{
@@ -29,7 +27,6 @@ export function TradingAppPreview({ className }: TradingAppPreviewProps) {
       />
 
       <div className="glass-surface-strong overflow-hidden rounded-2xl border border-border-default shadow-[0_24px_80px_rgba(0,0,0,0.6)]">
-        {/* Window chrome */}
         <div className="flex items-center justify-between border-b border-border-subtle px-4 py-3">
           <div className="flex items-center gap-3">
             <div className="flex gap-1.5">
@@ -42,25 +39,26 @@ export function TradingAppPreview({ className }: TradingAppPreviewProps) {
             </span>
           </div>
           <div className="flex items-center gap-4 font-mono text-[11px]">
-            <span className="text-text-muted">ETH / USDC</span>
-            <span className="text-text-primary">3,421.50</span>
-            <span className="flex items-center gap-1 text-red-400">
-              <TrendingDown className="h-3 w-3" />
-              -1.2%
+            <span className="text-text-muted">{market.label}</span>
+            <span className="text-text-primary transition-all duration-500">
+              {market.lastPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            </span>
+            <span className={cn('flex items-center gap-1', isNegative ? 'text-red-400' : 'text-emerald-400')}>
+              {isNegative ? <TrendingDown className="h-3 w-3" /> : <TrendingUp className="h-3 w-3" />}
+              {market.change24h}%
             </span>
           </div>
         </div>
 
         <div className="grid gap-0 lg:grid-cols-[1fr_220px]">
-          {/* Chart + feed */}
           <div className="border-r border-border-subtle p-4">
-            <DepthChartMock />
+            <PreviewDepthChart midPrice={market.lastPrice} buyDepth={buyDepth} sellDepth={sellDepth} />
             <div className="mt-4">
               <p className="mb-2 font-mono text-[10px] uppercase tracking-wider text-text-faint">
                 Live Settlement Feed
               </p>
               <div className="space-y-1.5">
-                {PREVIEW_SETTLEMENTS.map((row) => (
+                {previewRows.map((row) => (
                   <div
                     key={row.id}
                     className="flex items-center justify-between rounded-lg bg-bg-elevated/50 px-3 py-2 font-mono text-[10px]"
@@ -79,7 +77,6 @@ export function TradingAppPreview({ className }: TradingAppPreviewProps) {
             </div>
           </div>
 
-          {/* Order panel */}
           <div className="p-4">
             <div className="mb-3 flex rounded-lg border border-border-subtle p-0.5">
               <button
@@ -97,7 +94,10 @@ export function TradingAppPreview({ className }: TradingAppPreviewProps) {
             </div>
 
             <div className="space-y-3">
-              <PreviewField label="Price" value="3,421.50" />
+              <PreviewField
+                label="Price"
+                value={market.lastPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              />
               <PreviewField label="Amount" value="2.50 ETH" />
               <div>
                 <p className="mb-1.5 font-mono text-[10px] uppercase tracking-wider text-text-faint">
@@ -150,7 +150,7 @@ export function TradingAppPreview({ className }: TradingAppPreviewProps) {
           <TrendingUp className="h-3 w-3 text-emerald-400" />
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
@@ -167,10 +167,35 @@ function PreviewField({ label, value }: { label: string; value: string }) {
   )
 }
 
-function DepthChartMock() {
+function PreviewDepthChart({
+  midPrice,
+  buyDepth,
+  sellDepth,
+}: {
+  midPrice: number
+  buyDepth: { price: number; size: number }[]
+  sellDepth: { price: number; size: number }[]
+}) {
+  const maxSize = Math.max(
+    ...buyDepth.map((d) => d.size),
+    ...sellDepth.map((d) => d.size),
+    1,
+  )
+
+  const buyPoints = buyDepth.map((d, i) => {
+    const x = 200 - (i + 1) * (180 / buyDepth.length)
+    const y = 120 - (d.size / maxSize) * 100
+    return `${x},${y}`
+  })
+  const sellPoints = sellDepth.map((d, i) => {
+    const x = 200 + (i + 1) * (180 / sellDepth.length)
+    const y = 120 - (d.size / maxSize) * 100
+    return `${x},${y}`
+  })
+
   return (
     <div className="relative h-36 overflow-hidden rounded-xl border border-border-subtle bg-bg-elevated/40">
-      <svg viewBox="0 0 400 120" className="h-full w-full" preserveAspectRatio="none">
+      <svg viewBox="0 0 400 120" className="h-full w-full transition-all duration-700" preserveAspectRatio="none">
         <defs>
           <linearGradient id="buyGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="rgba(74, 222, 128, 0.25)" />
@@ -182,17 +207,19 @@ function DepthChartMock() {
           </linearGradient>
         </defs>
         <path
-          d="M0,60 L50,55 L100,48 L150,42 L200,60 L200,120 L0,120 Z"
+          d={`M200,120 L${buyPoints.join(' L')} L0,120 Z`}
           fill="url(#buyGrad)"
+          className="transition-all duration-700"
         />
         <path
-          d="M200,60 L250,65 L300,72 L350,78 L400,60 L400,0 L200,0 Z"
+          d={`M200,120 L${sellPoints.join(' L')} L400,120 Z`}
           fill="url(#sellGrad)"
+          className="transition-all duration-700"
         />
         <line x1="200" y1="0" x2="200" y2="120" stroke="rgba(245,240,238,0.08)" />
       </svg>
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-pill border border-border-subtle bg-bg-base/90 px-3 py-1 font-mono text-xs text-text-primary">
-        3,421.50
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-pill border border-border-subtle bg-bg-base/90 px-3 py-1 font-mono text-xs text-text-primary transition-all duration-500">
+        {midPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}
       </div>
     </div>
   )

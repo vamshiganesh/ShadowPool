@@ -46,7 +46,7 @@ export function ZkCommitmentsContent() {
         <p className="mb-6 text-sm leading-relaxed text-text-secondary">
           ShadowPool replaces public order broadcast with ZK commitments. Instead of
           revealing what you want to trade, you publish a hash that cryptographically
-          binds your intent — provable later, invisible now.
+          binds your intent. Provable later, invisible now.
         </p>
 
         <div className="grid gap-4 lg:grid-cols-2">
@@ -121,7 +121,7 @@ export function ZkCommitmentsContent() {
                   />
                 </div>
               ))}
-              <BeamButton onClick={compute} disabled={computing} className="mt-2 w-full">
+              <BeamButton onClick={compute} disabled={computing} className="mt-2">
                 {computing ? 'Computing…' : 'Compute Hash'}
               </BeamButton>
             </div>
@@ -162,8 +162,9 @@ export function ZkCommitmentsContent() {
       </DocsSection>
 
       <DocsSection title="What the Circuit Verifies">
-        <ol className="space-y-4">
-          {[
+        <div className="space-y-4">
+          <ol className="space-y-4">
+            {[
             {
               n: '01',
               title: 'Commitment Formation',
@@ -177,7 +178,7 @@ export function ZkCommitmentsContent() {
             {
               n: '03',
               title: 'Sender Binding',
-              desc: 'The address embedded in private inputs matches the transaction sender — no order hijacking.',
+              desc: 'The address embedded in private inputs matches the transaction sender. No order hijacking.',
             },
           ].map((item) => (
             <li key={item.n} className="flex gap-4 rounded-xl border border-border-subtle p-4">
@@ -187,13 +188,14 @@ export function ZkCommitmentsContent() {
                 <p className="mt-1 text-xs leading-relaxed text-text-muted">{item.desc}</p>
               </div>
             </li>
-          ))}
-        </ol>
+            ))}
+          </ol>
 
-        <DocsCallout title="All-or-Nothing Validity" variant="success">
-          If any single constraint fails, proof generation aborts. There is no partial validity —
-          the proof either demonstrates a correct match or does not exist.
-        </DocsCallout>
+          <DocsCallout title="All-or-Nothing Validity" variant="success">
+            If any single constraint fails, proof generation aborts. There is no partial validity,
+            the proof either demonstrates a correct match or does not exist.
+          </DocsCallout>
+        </div>
       </DocsSection>
 
       <DocsNavigationFooter

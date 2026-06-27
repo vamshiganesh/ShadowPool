@@ -1,20 +1,30 @@
-import { PROOF_TIME_BUCKETS } from '@/features/stats/data/mockStats'
 import { GlassCard } from '@/components/ui/GlassCard'
 
-export function ProofTimeDistribution() {
-  const maxPercent = Math.max(...PROOF_TIME_BUCKETS.map((b) => b.percent))
+interface ProofBucket {
+  range: string
+  percent: number
+}
+
+interface ProofTimeDistributionProps {
+  buckets: readonly ProofBucket[]
+  periodLabel: string
+  p99Ms: string
+}
+
+export function ProofTimeDistribution({ buckets, periodLabel, p99Ms }: ProofTimeDistributionProps) {
+  const maxPercent = Math.max(...buckets.map((b) => b.percent), 1)
 
   return (
     <GlassCard padding="md" className="h-full">
       <div className="mb-5">
         <h3 className="font-heading text-card-title text-text-primary">Proof Generation</h3>
         <p className="mt-0.5 font-mono text-[10px] text-text-faint">
-          Timing Distribution (ms)
+          Timing Distribution (ms) · {periodLabel}
         </p>
       </div>
 
       <div className="space-y-3">
-        {PROOF_TIME_BUCKETS.map((bucket) => (
+        {buckets.map((bucket) => (
           <div key={bucket.range} className="flex items-center gap-3">
             <span className="w-14 shrink-0 font-mono text-[10px] text-text-faint">
               {bucket.range}
@@ -36,7 +46,7 @@ export function ProofTimeDistribution() {
         <p className="font-mono text-[10px] uppercase tracking-wider text-text-faint">
           P99 Latency
         </p>
-        <p className="mt-1 font-heading text-lg font-semibold text-orange-warm">1,842 ms</p>
+        <p className="mt-1 font-heading text-lg font-semibold text-orange-warm">{p99Ms}</p>
       </div>
     </GlassCard>
   )

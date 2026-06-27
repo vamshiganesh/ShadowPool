@@ -4,7 +4,7 @@ export const PROTOCOL = {
   network: 'Sepolia',
   version: 'v1.0.4-stable',
   blockHeight: 7_234_891,
-  constraints: 18_432,
+  constraints: 1_746,
   avgProofTime: '8.4s',
   avgProofTimeMs: 8400,
   settlementRate: '99.8%',

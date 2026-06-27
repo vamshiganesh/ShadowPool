@@ -1,5 +1,4 @@
 import type { OrderFilterTab } from '@/features/orders/data/mockOrders'
-import { FILTER_COUNTS } from '@/features/orders/data/mockOrders'
 import { cn } from '@/lib/utils/cn'
 
 const TABS: { id: OrderFilterTab; label: string }[] = [
@@ -12,9 +11,10 @@ const TABS: { id: OrderFilterTab; label: string }[] = [
 interface OrdersFilterTabsProps {
   active: OrderFilterTab
   onChange: (tab: OrderFilterTab) => void
+  counts: Record<OrderFilterTab, number>
 }
 
-export function OrdersFilterTabs({ active, onChange }: OrdersFilterTabsProps) {
+export function OrdersFilterTabs({ active, onChange, counts }: OrdersFilterTabsProps) {
   return (
     <div className="inline-flex flex-wrap gap-1 rounded-xl border border-border-subtle glass-surface-light p-1">
       {TABS.map((tab) => (
@@ -30,7 +30,7 @@ export function OrdersFilterTabs({ active, onChange }: OrdersFilterTabsProps) {
           )}
         >
           {tab.label}
-          <span className="ml-1.5 text-text-faint">({FILTER_COUNTS[tab.id]})</span>
+          <span className="ml-1.5 text-text-faint">({counts[tab.id]})</span>
         </button>
       ))}
     </div>

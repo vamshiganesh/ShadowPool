@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Container } from '@/components/ui/Container'
 import { BeamLink } from '@/components/ui/BeamButton'
@@ -38,9 +37,8 @@ export function FinalCTASection() {
             </p>
 
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <BeamLink to={LANDING_LINKS.launchApp} size="lg">
+              <BeamLink to={LANDING_LINKS.launchApp} size="lg" arrowBadge>
                 Launch App
-                <ArrowRight className="h-4 w-4" />
               </BeamLink>
               <Link to={LANDING_LINKS.protocol}>
                 <GhostButton size="lg" className="rounded-pill border border-border-subtle px-7">

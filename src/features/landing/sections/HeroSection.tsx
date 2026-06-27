@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight } from 'lucide-react'
 import { BeamLink } from '@/components/ui/BeamButton'
 import { GhostButton } from '@/components/ui/GhostButton'
 import { StatusPill } from '@/components/ui/StatusPill'
@@ -10,7 +9,7 @@ import { HERO_CHIPS, LANDING_LINKS } from '@/features/landing/data'
 
 export function HeroSection() {
   return (
-    <section className="relative flex min-h-[calc(100vh-4.25rem)] flex-col justify-center overflow-hidden pb-8 pt-16 lg:pt-20">
+    <section className="relative flex min-h-[calc(100vh-5.5rem)] flex-col justify-center overflow-hidden pb-8 pt-12 lg:pt-16">
       <Container className="relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -33,9 +32,8 @@ export function HeroSection() {
           </p>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <BeamLink to={LANDING_LINKS.launchApp} size="lg">
+            <BeamLink to={LANDING_LINKS.launchApp} size="lg" arrowBadge>
               Launch App
-              <ArrowRight className="h-4 w-4" />
             </BeamLink>
             <Link to={LANDING_LINKS.readCircuit}>
               <GhostButton size="lg" className="rounded-pill border border-border-subtle px-7">

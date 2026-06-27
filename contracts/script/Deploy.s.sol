@@ -41,6 +41,7 @@ contract Deploy is Script {
         vm.stopBroadcast();
 
         // Persist addresses for prover / watcher / frontend.
+        uint256 deployBlock = block.number;
         string memory json = string(
             abi.encodePacked(
                 '{"verifier":"',
@@ -49,7 +50,9 @@ contract Deploy is Script {
                 vm.toString(address(orderBook)),
                 '","settlement":"',
                 vm.toString(address(settlement)),
-                '","network":"sepolia","chainId":11155111}'
+                '","network":"sepolia","chainId":11155111,"deployBlock":',
+                vm.toString(deployBlock),
+                '}'
             )
         );
         vm.writeFile("../shared/addresses.json", json);

@@ -1,16 +1,42 @@
+import { Suspense, lazy, type ComponentType } from 'react'
 import { createBrowserRouter } from 'react-router-dom'
 import { ROUTES } from '@/lib/constants/routes'
 import { MarketingLayout } from '@/app/layouts/MarketingLayout'
 import { ApplicationLayout } from '@/app/layouts/ApplicationLayout'
 import { DocsLayout } from '@/app/layouts/DocsLayout'
-import { LandingPage } from '@/pages/LandingPage'
-import { TradePage } from '@/pages/TradePage'
-import { OrdersPage } from '@/pages/OrdersPage'
-import { StatsPage } from '@/pages/StatsPage'
-import { MobileTradePage } from '@/pages/MobileTradePage'
-import { DocsProblemPage } from '@/pages/DocsProblemPage'
-import { DocsZkCommitmentsPage } from '@/pages/DocsZkCommitmentsPage'
-import { DocsCircuitPage } from '@/pages/DocsCircuitPage'
+
+function PageLoader() {
+  return <div className="min-h-screen bg-bg-base" aria-busy="true" />
+}
+
+function lazyPage<P extends Record<string, ComponentType>>(
+  loader: () => Promise<P>,
+  exportName: keyof P,
+) {
+  const Lazy = lazy(() =>
+    loader().then((mod) => ({ default: mod[exportName] as ComponentType })),
+  )
+
+  return function LazyPage() {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <Lazy />
+      </Suspense>
+    )
+  }
+}
+
+const LandingPage = lazyPage(() => import('@/pages/LandingPage'), 'LandingPage')
+const MobileTradePage = lazyPage(() => import('@/pages/MobileTradePage'), 'MobileTradePage')
+const TradePage = lazyPage(() => import('@/pages/TradePage'), 'TradePage')
+const OrdersPage = lazyPage(() => import('@/pages/OrdersPage'), 'OrdersPage')
+const StatsPage = lazyPage(() => import('@/pages/StatsPage'), 'StatsPage')
+const DocsProblemPage = lazyPage(() => import('@/pages/DocsProblemPage'), 'DocsProblemPage')
+const DocsZkCommitmentsPage = lazyPage(
+  () => import('@/pages/DocsZkCommitmentsPage'),
+  'DocsZkCommitmentsPage',
+)
+const DocsCircuitPage = lazyPage(() => import('@/pages/DocsCircuitPage'), 'DocsCircuitPage')
 
 export const router = createBrowserRouter([
   {

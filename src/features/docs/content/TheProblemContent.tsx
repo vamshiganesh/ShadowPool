@@ -16,7 +16,7 @@ export function TheProblemContent() {
     <DocsPageShell
       eyebrow="Introduction"
       title="The Mempool is Public."
-      description="Every transaction submitted to Ethereum enters a globally visible pending queue. For traders, this transparency is not neutrality — it is an attack surface."
+      description="Every transaction submitted to Ethereum enters a globally visible pending queue. For traders, this transparency is not neutrality, it is an attack surface."
     >
       <DocsSection>
         <p className="text-sm leading-relaxed text-text-secondary">
@@ -39,7 +39,7 @@ export function TheProblemContent() {
       </DocsSection>
 
       <DocsCallout title="Mathematical Certainty of Extraction" variant="warning">
-        In a transparent mempool, MEV extraction is not a risk — it is a mathematical
+        In a transparent mempool, MEV extraction is not a risk, it is a mathematical
         guarantee. Any profitable trade visible to searchers will be targeted. The only
         variable is how much value is extracted, not whether extraction occurs.
       </DocsCallout>
@@ -72,7 +72,7 @@ export function TheProblemContent() {
       <DocsSection title="Zero-Knowledge Changes the Equation">
         <p className="text-sm leading-relaxed text-text-secondary">
           ShadowPool replaces visible order broadcast with{' '}
-          <DocsInlineCode>Poseidon commitments</DocsInlineCode> — cryptographic fingerprints
+          <DocsInlineCode>Poseidon commitments</DocsInlineCode>, cryptographic fingerprints
           that bind order intent without revealing it. A Groth16 proof demonstrates that a
           match is valid without exposing the underlying inputs. Settlement is atomic:
           funds move only if the proof verifies on-chain.

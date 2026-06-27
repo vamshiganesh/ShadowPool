@@ -1,5 +1,5 @@
 export { AtmosphereStack } from '../atmosphere'
-export { BeamWrapper, BeamButton, BeamLink, beamButtonClasses } from './BeamButton'
+export { BeamWrapper, BeamButton, BeamLink, LaunchArrowBadge, beamButtonClasses } from './BeamButton'
 export { GhostButton } from './GhostButton'
 export { Container } from './Container'
 export { Divider } from './Divider'
