@@ -2,7 +2,6 @@ import { Suspense, lazy, type ComponentType } from 'react'
 import { createBrowserRouter } from 'react-router-dom'
 import { ROUTES } from '@/lib/constants/routes'
 import { MarketingLayout } from '@/app/layouts/MarketingLayout'
-import { ApplicationLayout } from '@/app/layouts/ApplicationLayout'
 import { DocsLayout } from '@/app/layouts/DocsLayout'
 import { LandingPage } from '@/pages/LandingPage'
 import { DocsProblemPage } from '@/pages/DocsProblemPage'
@@ -37,12 +36,14 @@ function lazyPage<P extends Record<string, ComponentType>>(
   }
 }
 
-const MobileTradePage = lazyPage(() => import('@/pages/MobileTradePage'), 'MobileTradePage')
-const TradePage = lazyPage(() => import('@/pages/TradePage'), 'TradePage')
-const OrdersPage = lazyPage(() => import('@/pages/OrdersPage'), 'OrdersPage')
-const StatsPage = lazyPage(() => import('@/pages/StatsPage'), 'StatsPage')
+const AppTerminalLayout = lazyPage(
+  () => import('@/app/appSection'),
+  'AppTerminalLayout',
+)
 
-/** Marketing + docs eager for instant first paint; app routes lazy-load web3 bundles. */
+const MobileTradePage = lazyPage(() => import('@/pages/MobileTradePage'), 'MobileTradePage')
+
+/** Marketing + docs eager; one lazy app shell for Trade / Orders / Stats. */
 export const router = createBrowserRouter([
   {
     element: <MarketingLayout />,
@@ -52,11 +53,11 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    element: <ApplicationLayout />,
+    element: <AppTerminalLayout />,
     children: [
-      { path: ROUTES.app, element: <TradePage /> },
-      { path: ROUTES.orders, element: <OrdersPage /> },
-      { path: ROUTES.stats, element: <StatsPage /> },
+      { path: ROUTES.app },
+      { path: ROUTES.orders },
+      { path: ROUTES.stats },
     ],
   },
   {

@@ -1,19 +1,33 @@
-import { buildPoseidon } from 'circomlibjs'
+import type { OrderInput } from './commitmentInputs'
 
-let poseidonInstance: Awaited<ReturnType<typeof buildPoseidon>> | null = null
+export type { OrderInput } from './commitmentInputs'
+export { generateNonce, generateSalt } from './commitmentInputs'
 
-async function getPoseidon() {
-  if (!poseidonInstance) {
-    poseidonInstance = await buildPoseidon()
-  }
-  return poseidonInstance
+type PoseidonInstance = {
+  F: { toString: (value: unknown) => string }
+  (inputs: bigint[]): unknown
 }
 
-export interface OrderInput {
-  assetAmount: bigint // 18 decimal fixed-point (ETH)
-  limitPrice: bigint // 6 decimal fixed-point (USDC)
-  nonce: bigint // random 128-bit integer
-  salt: bigint // uint256 entropy
+let poseidonInstance: PoseidonInstance | null = null
+let poseidonLoad: Promise<PoseidonInstance> | null = null
+
+/** Load circomlibjs on demand — keeps ~2.8MB WASM out of the initial app bundle. */
+async function getPoseidon(): Promise<PoseidonInstance> {
+  if (poseidonInstance) return poseidonInstance
+  if (!poseidonLoad) {
+    poseidonLoad = import('circomlibjs').then(async ({ buildPoseidon }) => {
+      poseidonInstance = (await buildPoseidon()) as PoseidonInstance
+      return poseidonInstance
+    })
+  }
+  return poseidonLoad
+}
+
+/** Warm WASM in the background after the app shell mounts. */
+export function prefetchPoseidon(): void {
+  void getPoseidon().catch(() => {
+    /* optional — hash still loads on first compute */
+  })
 }
 
 /**
@@ -38,22 +52,4 @@ export async function computeCommitment(order: OrderInput): Promise<string> {
   // Match prover/src/commitment.ts formatting exactly.
   const decimal = F.toString(hash)
   return '0x' + BigInt(decimal).toString(16).padStart(64, '0')
-}
-
-/** Generate a secure random 128-bit nonce. */
-export function generateNonce(): bigint {
-  const arr = new Uint8Array(16)
-  crypto.getRandomValues(arr)
-  return BigInt(
-    '0x' + Array.from(arr, (b) => b.toString(16).padStart(2, '0')).join(''),
-  )
-}
-
-/** Generate a secure random uint256 salt. */
-export function generateSalt(): bigint {
-  const arr = new Uint8Array(32)
-  crypto.getRandomValues(arr)
-  return BigInt(
-    '0x' + Array.from(arr, (b) => b.toString(16).padStart(2, '0')).join(''),
-  )
 }

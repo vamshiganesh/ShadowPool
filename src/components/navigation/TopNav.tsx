@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Menu, X, Zap } from 'lucide-react'
 import { APP_NAME, NAV_LINKS, ROUTES } from '@/lib/constants/routes'
+import { prefetchAppSection } from '@/lib/prefetchApp'
 import { BeamLink } from '@/components/ui/BeamButton'
 import { Container } from '@/components/ui/Container'
 import { cn } from '@/lib/utils/cn'
@@ -70,6 +71,8 @@ function LaunchCta({ className }: { className?: string }) {
       shape="rounded"
       arrowBadge
       className={className}
+      onMouseEnter={prefetchAppSection}
+      onFocus={prefetchAppSection}
     >
       Launch App
     </BeamLink>
