@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ShadowPool — ZK Dark Pool on Ethereum</title>
+  <meta name="description" content="Private orders. Verified settlement. Zero front-running. A full Groth16 ZK dark pool on Ethereum Sepolia." />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="ShadowPool — ZK Dark Pool on Ethereum" />
+  <meta property="og:description" content="Private orders. Verified settlement. Zero front-running." />
+  <meta property="og:image" content="https://raw.githubusercontent.com/vamshiganesh/ShadowPool/main/ShadowPool-GitHub-Logo.png" />
+  <meta property="og:url" content="https://vamshiganesh.github.io/ShadowPool/" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #09080a;
+      --surface: #0f0e11;
+      --elevated: #161419;
+      --border: rgba(255,255,255,0.08);
+      --border-strong: rgba(255,255,255,0.12);
+      --orange: #c4390f;
+      --orange-warm: #e05a2b;
+      --orange-glow: rgba(196, 57, 15, 0.18);
+      --text-primary: #f5f0ee;
+      --text-secondary: #a89f9d;
+      --text-faint: #5c5452;
+      --green: #4ade80;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: 'DM Sans', system-ui, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Background glow */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -20vh;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60vw;
+      height: 60vh;
+      background: radial-gradient(ellipse at center, rgba(196,57,15,0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Particle canvas placeholder via CSS */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.08) 0%, transparent 100%),
+        radial-gradient(1px 1px at 80% 70%, rgba(255,255,255,0.06) 0%, transparent 100%),
+        radial-gradient(1px 1px at 50% 50%, rgba(255,255,255,0.04) 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .brand img {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+    }
+
+    .brand-name {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.03em;
+    }
+
+    .nav-link {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-link:hover { color: var(--text-primary); }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 80px 0 64px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(196,57,15,0.12);
+      border: 1px solid rgba(196,57,15,0.3);
+      border-radius: 100px;
+      padding: 6px 14px;
+      margin-bottom: 36px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--orange-warm);
+    }
+
+    .hero-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 6px rgba(74,222,128,0.6);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .hero img.logo {
+      width: 340px;
+      max-width: 90%;
+      margin-bottom: 28px;
+    }
+
+    .hero-tagline {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      font-weight: 400;
+      margin-bottom: 48px;
+      line-height: 1.6;
+    }
+
+    /* Buttons */
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 22px;
+      border-radius: 10px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--orange) 0%, #a02d08 100%);
+      color: #fff;
+      box-shadow: 0 0 20px rgba(196,57,15,0.35);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 0 32px rgba(196,57,15,0.55);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--elevated);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-strong);
+    }
+
+    .btn-secondary:hover {
+      color: var(--text-primary);
+      border-color: rgba(255,255,255,0.2);
+      transform: translateY(-1px);
+    }
+
+    .external-note {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      color: var(--text-faint);
+      letter-spacing: 0.04em;
+    }
+
+    /* Chips */
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 44px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 6px;
+      background: var(--elevated);
+      border: 1px solid var(--border);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-secondary);
+      letter-spacing: 0.06em;
+    }
+
+    .chip-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--orange);
+      opacity: 0.7;
+    }
+
+    /* Divider */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 60px 0;
+    }
+
+    /* Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 0 0 60px;
+    }
+
+    .stat {
+      background: var(--surface);
+      padding: 24px 20px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-family: 'DM Mono', monospace;
+      font-size: 1.6rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+
+    .stat-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-faint);
+      margin-top: 6px;
+    }
+
+    /* Pipeline */
+    .pipeline {
+      margin: 0 0 60px;
+    }
+
+    .pipeline-title {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-faint);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .pipeline-steps {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0;
+    }
+
+    .pipeline-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pipeline-node {
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      background: var(--elevated);
+      border: 1px solid var(--border-strong);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.55rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-secondary);
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    .pipeline-node.highlight {
+      border-color: rgba(196,57,15,0.4);
+      background: rgba(196,57,15,0.08);
+      color: var(--orange-warm);
+    }
+
+    .pipeline-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.55rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-faint);
+    }
+
+    .pipeline-arrow {
+      width: 28px;
+      height: 1px;
+      background: var(--border-strong);
+      position: relative;
+      margin: 0 -2px;
+      margin-bottom: 22px;
+    }
+
+    .pipeline-arrow::after {
+      content: '';
+      position: absolute;
+      right: -1px;
+      top: -3px;
+      width: 6px;
+      height: 6px;
+      border-right: 1px solid var(--border-strong);
+      border-top: 1px solid var(--border-strong);
+      transform: rotate(45deg);
+    }
+
+    /* Stack */
+    .stack-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 60px;
+    }
+
+    .stack-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .stack-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: var(--orange-glow);
+      border: 1px solid rgba(196,57,15,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.75rem;
+    }
+
+    .stack-text {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-secondary);
+    }
+
+    .stack-label {
+      font-size: 0.6rem;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-top: 2px;
+    }
+
+    /* Tx box */
+    .tx-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 60px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .tx-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px rgba(74,222,128,0.5);
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+
+    .tx-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-faint);
+      margin-bottom: 6px;
+    }
+
+    .tx-hash {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--orange-warm);
+      text-decoration: none;
+      word-break: break-all;
+      line-height: 1.5;
+    }
+
+    .tx-hash:hover { text-decoration: underline; }
+
+    .tx-meta {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--text-faint);
+      margin-top: 6px;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .footer-left {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-faint);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .footer-link {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      transition: color 0.2s;
+    }
+
+    .footer-link:hover { color: var(--text-primary); }
+
+    @media (max-width: 600px) {
+      .pipeline-steps { gap: 4px; }
+      .pipeline-arrow { width: 16px; }
+      .stack-list { grid-template-columns: 1fr; }
+      footer { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <a href="https://vamshiganesh.github.io/ShadowPool/" class="brand">
+        <img
+          src="https://raw.githubusercontent.com/vamshiganesh/ShadowPool/main/ShadowPool-GitHub-Logo.png"
+          alt="ShadowPool"
+        />
+        <span class="brand-name">ShadowPool</span>
+      </a>
+      <a href="https://github.com/vamshiganesh/ShadowPool" class="nav-link" target="_blank" rel="noopener">
+        GitHub
+      </a>
+    </header>
+
+    <section class="hero">
+      <div class="hero-badge">Private Execution Layer &nbsp;—&nbsp; Sepolia Testnet Live</div>
+
+      <img
+        class="logo"
+        src="https://raw.githubusercontent.com/vamshiganesh/ShadowPool/main/ShadowPool-GitHub-Logo.png"
+        alt="ShadowPool"
+      />
+
+      <p class="hero-tagline">
+        Private orders. Verified settlement. Zero front-running.<br />
+        A full Groth16 ZK dark pool on Ethereum.
+      </p>
+
+      <div class="btn-group">
+        <a class="btn btn-primary" href="https://shadow-pool.vercel.app" target="_blank" rel="noopener">
+          Live App
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 9.5L9.5 2.5M9.5 2.5H4.5M9.5 2.5V7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a class="btn btn-secondary" href="https://youtu.be/SRvq2ZG-bUg" target="_blank" rel="noopener">
+          Watch Demo
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2.5L10 6L2 9.5V2.5Z" fill="currentColor"/></svg>
+        </a>
+        <a class="btn btn-secondary" href="https://sepolia.etherscan.io/tx/0x33225b04d725dd77d19f238dae3b97e07851a12639e65e7e4808a8487286cce9" target="_blank" rel="noopener">
+          Live Settlement TX
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 9.5L9.5 2.5M9.5 2.5H4.5M9.5 2.5V7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a class="btn btn-secondary" href="https://github.com/vamshiganesh/ShadowPool" target="_blank" rel="noopener">
+          Source Code
+        </a>
+      </div>
+
+      <p class="external-note">All links open in a new tab.</p>
+
+      <div class="chip-row">
+        <div class="chip"><div class="chip-dot"></div>Circom 2.0</div>
+        <div class="chip"><div class="chip-dot"></div>Groth16</div>
+        <div class="chip"><div class="chip-dot"></div>Fastify Matcher</div>
+        <div class="chip"><div class="chip-dot"></div>Solidity Settlement</div>
+        <div class="chip"><div class="chip-dot"></div>Poseidon Hash</div>
+        <div class="chip"><div class="chip-dot"></div>AES-256-GCM</div>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat">
+        <div class="stat-value">1,746</div>
+        <div class="stat-label">R1CS Constraints</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">8.4s</div>
+        <div class="stat-label">Avg Proof Time</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">~142k</div>
+        <div class="stat-label">Gas per Settlement</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">3</div>
+        <div class="stat-label">CI Jobs</div>
+      </div>
+    </div>
+
+    <!-- Pipeline -->
+    <div class="pipeline">
+      <p class="pipeline-title">Automated settlement pipeline</p>
+      <div class="pipeline-steps">
+        <div class="pipeline-step">
+          <div class="pipeline-node">Poseidon<br/>Hash</div>
+          <div class="pipeline-label">Commit</div>
+        </div>
+        <div class="pipeline-arrow"></div>
+        <div class="pipeline-step">
+          <div class="pipeline-node">Order<br/>Book</div>
+          <div class="pipeline-label">On-chain</div>
+        </div>
+        <div class="pipeline-arrow"></div>
+        <div class="pipeline-step">
+          <div class="pipeline-node highlight">Matcher<br/>Engine</div>
+          <div class="pipeline-label">Match</div>
+        </div>
+        <div class="pipeline-arrow"></div>
+        <div class="pipeline-step">
+          <div class="pipeline-node highlight">Groth16<br/>Prover</div>
+          <div class="pipeline-label">Prove</div>
+        </div>
+        <div class="pipeline-arrow"></div>
+        <div class="pipeline-step">
+          <div class="pipeline-node">Settle<br/>Atomic</div>
+          <div class="pipeline-label">Settle</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stack -->
+    <div class="stack-list">
+      <div class="stack-item">
+        <div class="stack-icon">⬡</div>
+        <div>
+          <div class="stack-text">React + Vite + wagmi</div>
+          <div class="stack-label">Frontend</div>
+        </div>
+      </div>
+      <div class="stack-item">
+        <div class="stack-icon">◈</div>
+        <div>
+          <div class="stack-text">Circom 2 + snarkjs</div>
+          <div class="stack-label">ZK Circuit + Prover</div>
+        </div>
+      </div>
+      <div class="stack-item">
+        <div class="stack-icon">⚡</div>
+        <div>
+          <div class="stack-text">Fastify + Supabase</div>
+          <div class="stack-label">Matcher Service</div>
+        </div>
+      </div>
+      <div class="stack-item">
+        <div class="stack-icon">◻</div>
+        <div>
+          <div class="stack-text">Solidity + ethers.js</div>
+          <div class="stack-label">Smart Contracts</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TX box -->
+    <div class="tx-box">
+      <div class="tx-dot"></div>
+      <div>
+        <div class="tx-label">Live settlement transaction — Ethereum Sepolia</div>
+        <a
+          class="tx-hash"
+          href="https://sepolia.etherscan.io/tx/0x33225b04d725dd77d19f238dae3b97e07851a12639e65e7e4808a8487286cce9"
+          target="_blank"
+          rel="noopener"
+        >
+          0x33225b04d725dd77d19f238dae3b97e07851a12639e65e7e4808a8487286cce9
+        </a>
+        <div class="tx-meta">
+          Method: settle(pA, pB, pC, commitmentA, commitmentB, clearingPrice)
+          &nbsp;·&nbsp;
+          Events: OrdersSettled + 2× CommitmentSettled + 2× EscrowReleased
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div class="footer-left">
+        ShadowPool &nbsp;·&nbsp; Groth16 Verifier — Circom v2 &nbsp;·&nbsp; Sepolia
+      </div>
+      <div class="footer-links">
+        <a class="footer-link" href="https://github.com/vamshiganesh/ShadowPool" target="_blank" rel="noopener">GitHub</a>
+        <a class="footer-link" href="https://github.com/vamshiganesh/ShadowPool/blob/main/DEPLOY.md" target="_blank" rel="noopener">Docs</a>
+        <a class="footer-link" href="https://youtu.be/SRvq2ZG-bUg" target="_blank" rel="noopener">YouTube</a>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
