@@ -17,6 +17,41 @@ function mapOnChainStatus(code: number): ChainCommitment['status'] {
   return 'onchain'
 }
 
+function parseAmountWei(amount: string): bigint {
+  const cleaned = amount.replace(/,/g, '').trim()
+  if (!cleaned) return 0n
+  const parts = cleaned.split('.')
+  const whole = parts[0] || '0'
+  const frac = (parts[1] ?? '').padEnd(18, '0').slice(0, 18)
+  return BigInt(whole) * 10n ** 18n + BigInt(frac || '0')
+}
+
+/**
+ * Instant seed from localStorage — no RPC. Used so Orders/Stats render immediately
+ * while background sync and historical indexing run.
+ */
+export function seedCommitmentsFromLocal(): ChainCommitment[] {
+  const local = loadLocalCommitments()
+  const results: ChainCommitment[] = []
+
+  for (const meta of local) {
+    if (!meta.txHash) continue
+    results.push({
+      hash: meta.hash,
+      trader:
+        meta.trader ??
+        ('0x0000000000000000000000000000000000000000' as `0x${string}`),
+      blockNumber: 0n,
+      txHash: meta.txHash,
+      escrowWei: parseAmountWei(meta.amount),
+      status: 'onchain',
+      blockTimestamp: meta.submittedAt,
+    })
+  }
+
+  return results
+}
+
 /**
  * Sync wallet-local commitments via cheap per-hash eth_call reads.
  * Avoids eth_getLogs entirely — works on Alchemy free tier.

@@ -3,9 +3,15 @@ import { useWatchContractEvent, useBlockNumber } from 'wagmi'
 import { ORDER_BOOK_ABI, SETTLEMENT_ABI } from '@/lib/contracts/abis'
 import { addresses, areContractsDeployed } from '@/lib/contracts/addresses'
 import { bootstrapProtocolEvents, publicClient } from '@/lib/protocol/bootstrap'
-import { syncLocalCommitmentStatuses } from '@/lib/protocol/syncLocalStatuses'
+import {
+  seedCommitmentsFromLocal,
+  syncLocalCommitmentStatuses,
+} from '@/lib/protocol/syncLocalStatuses'
 import { useProtocolEventStore } from '@/store/protocolEventStore'
 import type { ChainCommitment, ChainSettlement } from '@/lib/protocol/types'
+
+/** Delay before heavy eth_getLogs historical index (keeps first paint fast). */
+const HISTORY_INDEX_DELAY_MS = 2_500
 
 export function ProtocolEventProvider({ children }: { children: ReactNode }) {
   const upsertCommitment = useProtocolEventStore((s) => s.upsertCommitment)
@@ -24,46 +30,58 @@ export function ProtocolEventProvider({ children }: { children: ReactNode }) {
     }
 
     let cancelled = false
+    let historyStarted = false
 
-    const runBootstrap = async () => {
+    // ── Instant path: seed from localStorage + mark live (no RPC wait) ────────
+    for (const c of seedCommitmentsFromLocal()) {
+      upsertCommitment(c)
+    }
+    setBootstrapError(null)
+    setBootstrapped(true)
+    setListening(true)
+
+    const syncLocal = async () => {
       try {
-        // Primary path: statusOf per local commitment (no getLogs — free-tier safe).
         const localSynced = await syncLocalCommitmentStatuses()
-        if (!cancelled) {
-          for (const c of localSynced) upsertCommitment(c)
-          setBootstrapError(null)
-          setBootstrapped(true)
-          setListening(true)
-        }
-
-        // Best-effort historical index (may fail on free RPC — non-fatal).
-        try {
-          const { commitments, settlements } = await bootstrapProtocolEvents()
-          if (!cancelled) {
-            for (const c of commitments) upsertCommitment(c)
-            for (const s of settlements) addSettlement(s)
-          }
-        } catch {
-          /* getLogs indexing optional when local status sync succeeded */
-        }
+        if (cancelled) return
+        for (const c of localSynced) upsertCommitment(c)
+        setBootstrapError(null)
       } catch (err) {
         if (!cancelled) {
-          setBootstrapError(err instanceof Error ? err.message : 'Bootstrap failed')
-          setBootstrapped(true)
-          setListening(true)
+          setBootstrapError(err instanceof Error ? err.message : 'Sync failed')
         }
       }
     }
 
-    void runBootstrap()
+    const runHistoryIndex = async () => {
+      if (cancelled || historyStarted) return
+      historyStarted = true
+      try {
+        const { commitments, settlements } = await bootstrapProtocolEvents()
+        if (cancelled) return
+        for (const c of commitments) upsertCommitment(c)
+        for (const s of settlements) addSettlement(s)
+        setBootstrapError(null)
+      } catch {
+        /* getLogs indexing is optional — local sync + live watchers cover the app */
+      }
+    }
 
+    // Light sync first, then defer the expensive getLogs scan.
+    void syncLocal()
+    const historyTimer = window.setTimeout(() => {
+      void runHistoryIndex()
+    }, HISTORY_INDEX_DELAY_MS)
+
+    // On tab focus, refresh local statuses only — not the full history scan.
     const onFocus = () => {
-      void runBootstrap()
+      void syncLocal()
     }
     window.addEventListener('focus', onFocus)
 
     return () => {
       cancelled = true
+      window.clearTimeout(historyTimer)
       window.removeEventListener('focus', onFocus)
     }
   }, [deployed, upsertCommitment, addSettlement, setBootstrapped, setBootstrapError, setListening])

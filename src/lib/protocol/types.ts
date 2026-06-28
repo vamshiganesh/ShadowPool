@@ -74,6 +74,7 @@ export interface OrderRowFromChain {
   proofStatus: OrderProofStatus
   proofElapsed?: string
   settlementTx: string | null
+  settlementTxFull?: `0x${string}` | null
   commitmentHash: `0x${string}`
 }
 

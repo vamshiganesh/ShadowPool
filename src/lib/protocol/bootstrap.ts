@@ -74,15 +74,6 @@ function getFromBlock(): bigint {
   return 0n
 }
 
-async function blockTimestamp(blockNumber: bigint): Promise<number | undefined> {
-  try {
-    const block = await publicClient.getBlock({ blockNumber })
-    return Number(block.timestamp)
-  } catch {
-    return undefined
-  }
-}
-
 async function fetchEscrow(commitment: `0x${string}`): Promise<bigint> {
   try {
     const [, amount] = await publicClient.readContract({
@@ -95,6 +86,28 @@ async function fetchEscrow(commitment: `0x${string}`): Promise<bigint> {
   } catch {
     return 0n
   }
+}
+
+/** Run async work over items with bounded concurrency (avoids sequential N+1 RPC). */
+async function mapConcurrent<T, R>(
+  items: T[],
+  fn: (item: T) => Promise<R>,
+  concurrency = 6,
+): Promise<R[]> {
+  const results: R[] = new Array(items.length)
+  let index = 0
+
+  async function worker() {
+    while (index < items.length) {
+      const i = index++
+      results[i] = await fn(items[i])
+    }
+  }
+
+  await Promise.all(
+    Array.from({ length: Math.min(concurrency, items.length) }, () => worker()),
+  )
+  return results
 }
 
 export async function bootstrapProtocolEvents(): Promise<{
@@ -144,7 +157,7 @@ export async function bootstrapProtocolEvents(): Promise<{
 
   const commitmentMap = new Map<string, ChainCommitment>()
 
-  for (const log of submitLogs) {
+  const submitCommitments = await mapConcurrent(submitLogs, async (log) => {
     const args = (log as Log & {
       args: {
         commitment: `0x${string}`
@@ -154,16 +167,19 @@ export async function bootstrapProtocolEvents(): Promise<{
     }).args
     const hash = args.commitment
     const escrowWei = await fetchEscrow(hash)
-    const ts = log.blockNumber ? await blockTimestamp(log.blockNumber) : undefined
-    commitmentMap.set(hash.toLowerCase(), {
+    return {
       hash,
       trader: args.trader,
       blockNumber: log.blockNumber ?? args.blockNumber,
       txHash: log.transactionHash!,
       escrowWei,
-      status: 'onchain',
-      blockTimestamp: ts,
-    })
+      status: 'onchain' as const,
+      blockTimestamp: undefined,
+    }
+  })
+
+  for (const c of submitCommitments) {
+    commitmentMap.set(c.hash.toLowerCase(), c)
   }
 
   for (const log of cancelLogs) {
@@ -186,7 +202,7 @@ export async function bootstrapProtocolEvents(): Promise<{
 
   const settlements: ChainSettlement[] = []
 
-  for (const log of orderSettledLogs) {
+  const settledRecords = await mapConcurrent(orderSettledLogs, async (log) => {
     const args = (log as Log & {
       args: {
         commitmentA: `0x${string}`
@@ -197,23 +213,34 @@ export async function bootstrapProtocolEvents(): Promise<{
         settledBlock: bigint
       }
     }).args
-    const ts = log.blockNumber ? await blockTimestamp(log.blockNumber) : undefined
-    const escrowA = await fetchEscrow(args.commitmentA)
-    const escrowB = await fetchEscrow(args.commitmentB)
 
-    settlements.push({
-      id: `${log.transactionHash}-${args.commitmentA}`,
-      commitmentA: args.commitmentA,
-      commitmentB: args.commitmentB,
-      clearingPrice: args.clearingPrice,
-      traderA: args.traderA,
-      traderB: args.traderB,
-      blockNumber: log.blockNumber ?? args.settledBlock,
-      txHash: log.transactionHash!,
-      blockTimestamp: ts,
-      escrowA,
-      escrowB,
-    })
+    const [escrowA, escrowB] = await Promise.all([
+      fetchEscrow(args.commitmentA),
+      fetchEscrow(args.commitmentB),
+    ])
+
+    return {
+      settlement: {
+        id: `${log.transactionHash}-${args.commitmentA}`,
+        commitmentA: args.commitmentA,
+        commitmentB: args.commitmentB,
+        clearingPrice: args.clearingPrice,
+        traderA: args.traderA,
+        traderB: args.traderB,
+        blockNumber: log.blockNumber ?? args.settledBlock,
+        txHash: log.transactionHash!,
+        blockTimestamp: undefined,
+        escrowA,
+        escrowB,
+      } satisfies ChainSettlement,
+      args,
+      logBlock: log.blockNumber ?? args.settledBlock,
+      logTx: log.transactionHash!,
+    }
+  })
+
+  for (const { settlement, args, logBlock, logTx } of settledRecords) {
+    settlements.push(settlement)
 
     for (const [hash, trader] of [
       [args.commitmentA, args.traderA],
@@ -227,11 +254,10 @@ export async function bootstrapProtocolEvents(): Promise<{
         commitmentMap.set(key, {
           hash,
           trader,
-          blockNumber: log.blockNumber ?? args.settledBlock,
-          txHash: log.transactionHash!,
+          blockNumber: logBlock,
+          txHash: logTx,
           escrowWei: 0n,
           status: 'settled',
-          blockTimestamp: ts,
         })
       }
     }

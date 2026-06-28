@@ -317,6 +317,11 @@ export function useOrdersData(filter: OrderFilterTab) {
             : c.status === 'settled'
               ? truncateHash(c.txHash)
               : null,
+          settlementTxFull: matchedSettlement
+            ? matchedSettlement.txHash
+            : c.status === 'settled'
+              ? c.txHash
+              : null,
           commitmentHash: c.hash,
         }
       })
@@ -337,6 +342,7 @@ export function useOrdersData(filter: OrderFilterTab) {
           : '—',
         proofStatus: matchedSettlement ? 'settled' : 'pending',
         settlementTx: matchedSettlement ? truncateHash(matchedSettlement.txHash) : null,
+        settlementTxFull: matchedSettlement?.txHash ?? null,
         commitmentHash: meta.hash,
       })
       seen.add(meta.hash.toLowerCase())

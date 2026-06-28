@@ -2,6 +2,7 @@ import { ExternalLink } from 'lucide-react'
 import type { OrderRow } from '@/features/orders/data/mockOrders'
 import { StatusPill } from '@/components/ui/StatusPill'
 import { GhostButton } from '@/components/ui/GhostButton'
+import { etherscanTxUrl } from '@/lib/contracts/addresses'
 import { cn } from '@/lib/utils/cn'
 
 interface OrdersTableRowProps {
@@ -54,14 +55,20 @@ export function OrdersTableRow({ order, onInspect }: OrdersTableRowProps) {
         </div>
       </td>
       <td className="px-4 py-4">
-        {order.settlementTx ? (
-          <button
-            type="button"
-            className="inline-flex items-center gap-1 font-mono text-[11px] text-orange-warm/80 hover:text-orange-warm"
+        {order.settlementTx && order.settlementTxFull ? (
+          <a
+            href={etherscanTxUrl(order.settlementTxFull)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 font-mono text-[11px] text-orange-warm/80 transition-colors hover:text-orange-warm"
           >
             {order.settlementTx}
             <ExternalLink className="h-3 w-3 opacity-50" />
-          </button>
+          </a>
+        ) : order.settlementTx ? (
+          <span className="inline-flex items-center gap-1 font-mono text-[11px] text-orange-warm/80">
+            {order.settlementTx}
+          </span>
         ) : (
           <span className="font-mono text-[11px] text-text-faint">—</span>
         )}

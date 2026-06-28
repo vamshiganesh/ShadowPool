@@ -12,6 +12,8 @@ export interface OrderRow {
   proofStatus: OrderProofStatus
   proofElapsed?: string
   settlementTx: string | null
+  /** Full settlement tx hash for Etherscan links (display uses truncated `settlementTx`). */
+  settlementTxFull?: `0x${string}` | null
   commitmentHash?: `0x${string}`
 }
 
