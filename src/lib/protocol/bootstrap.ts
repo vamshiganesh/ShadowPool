@@ -9,16 +9,11 @@ import { sepolia } from 'viem/chains'
 import { ORDER_BOOK_ABI } from '@/lib/contracts/abis'
 import { addresses, areContractsDeployed } from '@/lib/contracts/addresses'
 import type { ChainCommitment, ChainSettlement } from '@/lib/protocol/types'
-
-/** Prefer wallet RPC for reads; publicnode archive getLogs often fails. */
-const INDEXER_HTTP =
-  import.meta.env.VITE_SEPOLIA_RPC_URL ||
-  import.meta.env.VITE_INDEXER_RPC_URL ||
-  'https://ethereum-sepolia-rpc.publicnode.com'
+import { getSepoliaRpcUrl } from '@/lib/protocol/rpcUrl'
 
 const publicClient = createPublicClient({
   chain: sepolia,
-  transport: http(INDEXER_HTTP),
+  transport: http(getSepoliaRpcUrl()),
 })
 
 /** Alchemy free = 10 blocks; chunk conservatively so bootstrap works without PAYG. */

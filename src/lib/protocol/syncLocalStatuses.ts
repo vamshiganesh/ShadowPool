@@ -4,14 +4,11 @@ import { ORDER_BOOK_ABI, ORDER_STATUS } from '@/lib/contracts/abis'
 import { addresses } from '@/lib/contracts/addresses'
 import { loadLocalCommitments } from '@/lib/protocol/localCommitments'
 import type { ChainCommitment } from '@/lib/protocol/types'
+import { getSepoliaRpcUrl } from '@/lib/protocol/rpcUrl'
 
 const readClient = createPublicClient({
   chain: sepolia,
-  transport: http(
-    import.meta.env.VITE_SEPOLIA_RPC_URL ||
-      import.meta.env.VITE_INDEXER_RPC_URL ||
-      'https://ethereum-sepolia-rpc.publicnode.com',
-  ),
+  transport: http(getSepoliaRpcUrl()),
 })
 
 function mapOnChainStatus(code: number): ChainCommitment['status'] {

@@ -36,7 +36,22 @@ async function bootstrap() {
   // ── Security ─────────────────────────────────────────────────────────────
   await app.register(helmet, { global: true })
   await app.register(cors, {
-    origin: [env.FRONTEND_URL],
+    origin: (origin, cb) => {
+      // Allow server-to-server / curl (no Origin header)
+      if (!origin) return cb(null, true)
+
+      // Dev: any localhost port (Vite may use 5173, 5174, …)
+      if (
+        env.NODE_ENV === 'development' &&
+        /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
+      ) {
+        return cb(null, true)
+      }
+
+      if (origin === env.FRONTEND_URL) return cb(null, true)
+
+      cb(new Error(`CORS blocked origin: ${origin}`), false)
+    },
     methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   })

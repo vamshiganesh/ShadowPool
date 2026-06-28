@@ -3,6 +3,7 @@ import { WagmiProvider, createConfig, http } from 'wagmi'
 import { sepolia } from 'wagmi/chains'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { metaMask, walletConnect } from 'wagmi/connectors'
+import { getSepoliaRpcUrl } from '@/lib/protocol/rpcUrl'
 
 const queryClient = new QueryClient()
 
@@ -20,14 +21,11 @@ const connectors = [
     : []),
 ]
 
-const sepoliaRpc =
-  import.meta.env.VITE_SEPOLIA_RPC_URL || 'https://ethereum-sepolia-rpc.publicnode.com'
-
 const config = createConfig({
   chains: [sepolia],
   connectors,
   transports: {
-    [sepolia.id]: http(sepoliaRpc),
+    [sepolia.id]: http(getSepoliaRpcUrl()),
   },
 })
 
