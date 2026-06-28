@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X, Zap } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import { APP_NAME, NAV_LINKS, ROUTES } from '@/lib/constants/routes'
 import { prefetchAppSection } from '@/lib/prefetchApp'
 import { BeamLink } from '@/components/ui/BeamButton'
@@ -99,9 +99,13 @@ export function TopNav({ variant = 'marketing', opaque = false }: TopNavProps) {
             to={ROUTES.home}
             className="flex shrink-0 items-center gap-2.5 transition-opacity hover:opacity-90"
           >
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-primary/15 text-orange-warm">
-              <Zap className="h-4 w-4" strokeWidth={2.25} />
-            </span>
+            <img
+              src="/favicon.svg"
+              alt=""
+              width={32}
+              height={32}
+              className="h-8 w-8 shrink-0 rounded-lg"
+            />
             <span className="font-heading text-[1.05rem] font-semibold tracking-[-0.03em] text-text-primary">
               {APP_NAME}
             </span>

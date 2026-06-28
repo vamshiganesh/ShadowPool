@@ -6,8 +6,6 @@ export const CIRCUIT_META = {
   curve: 'bn128',
   library: 'snarkjs',
   publicInputs: 3,
-  /** Proving artifact on the matcher/prover service — not exposed to browsers. */
-  provingArtifact: 'circuits/build/shadowpool_match_final.zkey',
   constraintBreakdown: [
     { label: 'Poseidon Hash', count: 1_120, color: '#C4390F' },
     { label: 'Price Validation', count: 320, color: '#AA2608' },
