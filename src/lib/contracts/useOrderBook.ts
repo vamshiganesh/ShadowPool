@@ -73,6 +73,7 @@ export function useSubmitCommitment() {
   const setActiveCommitment = useTradeStore((s) => s.setActiveCommitment)
   const setActiveLifecycleStage = useTradeStore((s) => s.setActiveLifecycleStage)
   const openCommitmentDrawer = useTradeStore((s) => s.openCommitmentDrawer)
+  const setMatcherUploadStatus = useTradeStore((s) => s.setMatcherUploadStatus)
 
   const { writeContractAsync, isPending, data: txHash } = useWriteContract()
   const { signMessageAsync } = useSignMessage()
@@ -108,7 +109,9 @@ export function useSubmitCommitment() {
       if (!snapshot.trader) return
       const message = buildUploadMessage(snapshot.hash, snapshot.nonce)
       try {
+        setMatcherUploadStatus('signing')
         const signature = await signMessageAsync({ message })
+        setMatcherUploadStatus('uploading')
         await uploadSecret({
           commitmentHash: snapshot.hash,
           assetAmount: toWeiString(snapshot.amount),
@@ -118,9 +121,10 @@ export function useSubmitCommitment() {
           trader: snapshot.trader!,
           signature,
         })
-        console.log('[useSubmitCommitment] Secrets uploaded to matcher service')
+        setMatcherUploadStatus('uploaded')
       } catch (err) {
-        // Non-fatal — the manual export flow still works as a fallback
+        const message = err instanceof Error ? err.message : String(err)
+        setMatcherUploadStatus('error', message)
         console.warn('[useSubmitCommitment] Matcher secret upload failed:', err)
       }
     }
@@ -133,6 +137,7 @@ export function useSubmitCommitment() {
     setActiveLifecycleStage,
     openCommitmentDrawer,
     signMessageAsync,
+    setMatcherUploadStatus,
   ])
 
   const submit = async (snapshot: CommitmentSubmitSnapshot) => {

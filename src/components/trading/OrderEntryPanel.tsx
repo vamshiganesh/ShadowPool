@@ -8,6 +8,7 @@ import { useCommitment } from '@/lib/crypto/useCommitment'
 import { useSubmitCommitment } from '@/lib/contracts/useOrderBook'
 import { useActiveCommitmentLifecycle } from '@/lib/hooks/useActiveCommitmentLifecycle'
 import { cn } from '@/lib/utils/cn'
+import type { MatcherUploadStatus } from '@/store/tradeStore'
 
 export function OrderEntryPanel() {
   const {
@@ -15,6 +16,8 @@ export function OrderEntryPanel() {
     price,
     amount,
     activeLifecycleStage,
+    matcherUploadStatus,
+    matcherUploadError,
     setSide,
     setPrice,
     setAmount,
@@ -92,12 +95,65 @@ export function OrderEntryPanel() {
         >
           {isSubmitting ? 'Submitting…' : 'Commit Order'}
         </button>
+
+        <MatcherStatusBanner status={matcherUploadStatus} error={matcherUploadError} />
       </GlassCard>
 
       <GlassCard padding="md">
         <LifecycleStepper activeStage={activeLifecycleStage} />
       </GlassCard>
     </div>
+  )
+}
+
+const MATCHER_LABELS: Record<MatcherUploadStatus, string | null> = {
+  idle: null,
+  signing: 'Sign to upload secrets to matcher…',
+  uploading: 'Uploading secrets to matcher…',
+  uploaded: 'Waiting for counterparty…',
+  error: null,
+}
+
+function MatcherStatusBanner({
+  status,
+  error,
+}: {
+  status: MatcherUploadStatus
+  error: string | null
+}) {
+  if (status === 'idle') return null
+
+  if (status === 'error') {
+    return (
+      <p className="mt-3 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 font-mono text-[10px] text-red-400">
+        Matcher upload failed — your order is still on-chain. Manual export still works.
+        {error && (
+          <span className="mt-1 block truncate opacity-70" title={error}>
+            {error.slice(0, 80)}
+          </span>
+        )}
+      </p>
+    )
+  }
+
+  const label = MATCHER_LABELS[status]
+  if (!label) return null
+
+  return (
+    <p
+      className={cn(
+        'mt-3 flex items-center gap-2 font-mono text-[10px] text-text-muted',
+        status === 'uploaded' && 'text-orange-warm/80',
+      )}
+    >
+      <span
+        className={cn(
+          'h-1.5 w-1.5 shrink-0 rounded-full',
+          status === 'uploaded' ? 'bg-orange-warm' : 'animate-pulse bg-text-faint',
+        )}
+      />
+      {label}
+    </p>
   )
 }
 

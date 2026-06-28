@@ -1,4 +1,3 @@
-import { ChevronDown } from 'lucide-react'
 import { useMarketData } from '@/lib/protocol/hooks/useMarketData'
 import { cn } from '@/lib/utils/cn'
 
@@ -8,15 +7,11 @@ export function PairHeader() {
 
   return (
     <header className="flex shrink-0 items-center justify-between gap-4 border-b border-border-subtle bg-bg-elevated/40 px-5 py-3">
-      <button
-        type="button"
-        className="flex items-center gap-2 rounded-lg border border-border-subtle px-3 py-1.5 transition-colors hover:border-border-default"
-      >
+      <div className="rounded-lg border border-border-subtle px-3 py-1.5">
         <span className="font-heading text-sm font-semibold text-text-primary">
           {market.label}
         </span>
-        <ChevronDown className="h-3.5 w-3.5 text-text-muted" />
-      </button>
+      </div>
 
       <div className="flex items-center gap-6 font-mono text-[11px] md:flex">
         <Metric label="Last Price" value={market.lastPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })} />

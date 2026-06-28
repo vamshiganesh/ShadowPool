@@ -43,13 +43,12 @@ async function getOpenCommitmentsOnChain(): Promise<Set<string>> {
 function findCrossingPair(
   secrets: SecretPayload[],
 ): { a: SecretPayload; b: SecretPayload; clearingPrice: bigint } | null {
-  // Separate into bids (buyers) and asks (sellers) by limit-price direction:
-  // bid.limitPrice is the max they'll pay; ask.limitPrice is the min they'll accept.
-  // We use asset_amount sign convention in the DB — here we rely on the frontend
-  // encoding: buyers have even nonces, sellers have odd nonces (same convention as
-  // prover/src/matcher.ts).
+  // Matching criteria must mirror prover/src/matcher.ts exactly so we only
+  // attempt to prove pairs that will satisfy the circuit constraints:
+  //   1. bid.limitPrice >= ask.limitPrice  (price ranges cross)
+  //   2. bid.assetAmount === ask.assetAmount  (exact fill size — circuit requirement)
   //
-  // Simplified: try all pairs and find one where limitPrice_bid >= limitPrice_ask.
+  // Determine bid/ask: higher-priced order is the bid (buyer paying more).
   for (let i = 0; i < secrets.length; i++) {
     for (let j = i + 1; j < secrets.length; j++) {
       const s1 = secrets[i]
@@ -57,8 +56,19 @@ function findCrossingPair(
 
       const p1 = BigInt(s1.limitPrice)
       const p2 = BigInt(s2.limitPrice)
+      const a1 = BigInt(s1.assetAmount)
+      const a2 = BigInt(s2.assetAmount)
 
-      // Determine bid/ask: higher-priced order is the bid (buyer paying more)
+      // ── Amount must match exactly (circuit constraint) ────────────────────
+      if (a1 !== a2) {
+        console.log(
+          `[matcher] Skipping pair ${s1.commitmentHash.slice(0, 10)}↔${s2.commitmentHash.slice(0, 10)}: ` +
+          `assetAmount mismatch (${a1} vs ${a2})`,
+        )
+        continue
+      }
+
+      // ── Price must cross ──────────────────────────────────────────────────
       const [bid, ask] = p1 >= p2 ? [s1, s2] : [s2, s1]
       const bidPrice = BigInt(bid.limitPrice)
       const askPrice = BigInt(ask.limitPrice)

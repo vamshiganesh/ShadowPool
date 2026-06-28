@@ -15,12 +15,21 @@ export interface ActiveCommitment {
   txHash?: `0x${string}`
 }
 
+export type MatcherUploadStatus =
+  | 'idle'
+  | 'signing'
+  | 'uploading'
+  | 'uploaded'
+  | 'error'
+
 interface TradeState {
   side: OrderSide
   price: string
   amount: string
   activeLifecycleStage: LifecycleStageId
   activeCommitment: ActiveCommitment | null
+  matcherUploadStatus: MatcherUploadStatus
+  matcherUploadError: string | null
   depthResolution: DepthResolution
   depthPanelHeight: PanelHeight
   depthPanelWidth: PanelWidth
@@ -35,6 +44,7 @@ interface TradeState {
   setAmount: (amount: string) => void
   setActiveLifecycleStage: (stage: LifecycleStageId) => void
   setActiveCommitment: (commitment: ActiveCommitment | null) => void
+  setMatcherUploadStatus: (status: MatcherUploadStatus, error?: string | null) => void
   setDepthResolution: (res: DepthResolution) => void
   setDepthPanelHeight: (height: PanelHeight) => void
   setDepthPanelWidth: (width: PanelWidth) => void
@@ -54,6 +64,8 @@ export const useTradeStore = create<TradeState>((set) => ({
   amount: '2.50',
   activeLifecycleStage: DEFAULT_ACTIVE_STAGE,
   activeCommitment: null,
+  matcherUploadStatus: 'idle',
+  matcherUploadError: null,
   depthResolution: '1',
   depthPanelHeight: 'default',
   depthPanelWidth: 'default',
@@ -68,6 +80,8 @@ export const useTradeStore = create<TradeState>((set) => ({
   setAmount: (amount) => set({ amount }),
   setActiveLifecycleStage: (stage) => set({ activeLifecycleStage: stage }),
   setActiveCommitment: (commitment) => set({ activeCommitment: commitment }),
+  setMatcherUploadStatus: (status, error = null) =>
+    set({ matcherUploadStatus: status, matcherUploadError: error ?? null }),
   setDepthResolution: (res) => set({ depthResolution: res }),
   setDepthPanelHeight: (height) => set({ depthPanelHeight: height }),
   setDepthPanelWidth: (width) => set({ depthPanelWidth: width }),
