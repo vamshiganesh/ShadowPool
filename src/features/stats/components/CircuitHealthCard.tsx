@@ -1,24 +1,42 @@
 import type { ReactNode } from 'react'
+import { useState } from 'react'
 import { CIRCUIT_META } from '@/lib/crypto/circuitMeta'
 import { addresses, areContractsDeployed, etherscanAddressUrl } from '@/lib/contracts/addresses'
 import { truncateHash } from '@/lib/protocol/format'
 import { GlassCard } from '@/components/ui/GlassCard'
 import { MonoLabel } from '@/components/ui/MonoLabel'
+import { cn } from '@/lib/utils/cn'
 
 const ROWS = [
   { key: 'circuits', label: 'Active Circuits' },
   { key: 'constraints', label: 'Constraints' },
   { key: 'verifier', label: 'Verifier Contract' },
   { key: 'updated', label: 'Last Update' },
-  { key: 'provingKey', label: 'Proving Key' },
+  { key: 'provingKey', label: 'Proving Artifact' },
   { key: 'gas', label: 'Verification Gas' },
 ] as const
 
 export function CircuitHealthCard() {
+  const [copied, setCopied] = useState(false)
   const deployed = areContractsDeployed()
   const verifierDisplay = deployed
     ? truncateHash(addresses.verifier, 8, 6)
     : '0x8f…3a9c'
+
+  const artifactDisplay =
+    CIRCUIT_META.provingArtifact.length > 22
+      ? `${CIRCUIT_META.provingArtifact.slice(0, 14)}…${CIRCUIT_META.provingArtifact.slice(-8)}`
+      : CIRCUIT_META.provingArtifact
+
+  const copyArtifact = async () => {
+    try {
+      await navigator.clipboard.writeText(CIRCUIT_META.provingArtifact)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 2000)
+    } catch {
+      /* clipboard unavailable */
+    }
+  }
 
   const values: Record<(typeof ROWS)[number]['key'], ReactNode> = {
     circuits: (
@@ -41,7 +59,19 @@ export function CircuitHealthCard() {
       verifierDisplay
     ),
     updated: 'Synced live',
-    provingKey: truncateHash('0x2a7f8e91c4b3d2a1f0e9d8c7b6a5948372615049382716250493827162510493827', 6, 4),
+    provingKey: (
+      <button
+        type="button"
+        onClick={() => void copyArtifact()}
+        title={`Click to copy artifact path: ${CIRCUIT_META.provingArtifact}`}
+        className={cn(
+          'max-w-[12rem] truncate text-orange-warm/90 transition-colors hover:text-orange-warm',
+          copied && 'text-emerald-400',
+        )}
+      >
+        {copied ? 'Copied path' : artifactDisplay}
+      </button>
+    ),
     gas: '~142k',
   }
 

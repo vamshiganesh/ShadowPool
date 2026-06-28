@@ -34,11 +34,11 @@ function isPairAwaitingProof(
  */
 function matcherStatusToStage(
   status: MatcherOrderStatus,
-): 'onchain' | 'matched' | 'proving' | 'settled' | null {
+): 'onchain' | 'matched' | 'proof' | 'settled' | null {
   switch (status) {
     case 'pending':  return 'onchain'
     case 'matched':  return 'matched'
-    case 'proving':  return 'proving'
+    case 'proving':  return 'proof'
     case 'settled':  return 'settled'
     default:         return null
   }
@@ -118,7 +118,7 @@ export function useActiveCommitmentLifecycle(draftHash?: string | null) {
 
         // Only advance the stepper — never go backwards
         const stageOrder: Record<string, number> = {
-          created: 0, onchain: 1, matched: 2, proving: 3, settled: 4,
+          created: 0, onchain: 1, matched: 2, proof: 3, settled: 4,
         }
         if ((stageOrder[stage] ?? 0) > (stageOrder[activeLifecycleStage] ?? 0)) {
           setActiveLifecycleStage(stage)

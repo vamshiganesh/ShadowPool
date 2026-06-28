@@ -37,10 +37,22 @@ export function getRangeStartSec(range: StatsTimeRange, nowSec = Math.floor(Date
 }
 
 export function isWithinRange(timestampSec: number | undefined, range: StatsTimeRange): boolean {
-  if (timestampSec === undefined) return range === 'all'
+  // Missing timestamps: include in bounded ranges (local/sync data) — better than hiding live activity.
+  if (timestampSec === undefined) return true
   const since = getRangeStartSec(range)
   if (since === null) return true
   return timestampSec >= since
+}
+
+/** Settlement pair count from on-chain settlement events or settled commitments. */
+export function countSettlementEvents(
+  settlementRecords: number,
+  settledCommitments: number,
+): number {
+  if (settlementRecords > 0) return settlementRecords
+  if (settledCommitments >= 2) return Math.floor(settledCommitments / 2)
+  if (settledCommitments >= 1) return 1
+  return 0
 }
 
 const MOCK_VOLUME: Record<StatsTimeRange, VolumeChartPoint[]> = {

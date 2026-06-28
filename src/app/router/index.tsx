@@ -4,20 +4,17 @@ import { ROUTES } from '@/lib/constants/routes'
 import { MarketingLayout } from '@/app/layouts/MarketingLayout'
 import { ApplicationLayout } from '@/app/layouts/ApplicationLayout'
 import { DocsLayout } from '@/app/layouts/DocsLayout'
-import { TradePage } from '@/pages/TradePage'
-import { OrdersPage } from '@/pages/OrdersPage'
-import { StatsPage } from '@/pages/StatsPage'
+import { LandingPage } from '@/pages/LandingPage'
+import { DocsProblemPage } from '@/pages/DocsProblemPage'
+import { DocsZkCommitmentsPage } from '@/pages/DocsZkCommitmentsPage'
+import { DocsCircuitPage } from '@/pages/DocsCircuitPage'
 
-function PageLoader() {
+function AppPageLoader() {
   return (
-    <div className="flex min-h-[50vh] flex-col gap-4 p-6 lg:p-8" aria-busy="true">
-      <div className="h-8 w-48 animate-pulse rounded-lg bg-white/5" />
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-20 animate-pulse rounded-xl bg-white/5" />
-        ))}
-      </div>
-      <div className="h-64 animate-pulse rounded-xl bg-white/5" />
+    <div className="flex min-h-[50vh] items-center justify-center p-8" aria-busy="true">
+      <p className="font-mono text-[11px] uppercase tracking-wider text-text-faint">
+        Loading terminal…
+      </p>
     </div>
   )
 }
@@ -25,29 +22,27 @@ function PageLoader() {
 function lazyPage<P extends Record<string, ComponentType>>(
   loader: () => Promise<P>,
   exportName: keyof P,
+  fallback: React.ReactNode = <AppPageLoader />,
 ) {
   const Lazy = lazy(() =>
     loader().then((mod) => ({ default: mod[exportName] as ComponentType })),
   )
 
-  return function LazyPage() {
+  return function LazyRoutePage() {
     return (
-      <Suspense fallback={<PageLoader />}>
+      <Suspense fallback={fallback}>
         <Lazy />
       </Suspense>
     )
   }
 }
 
-const LandingPage = lazyPage(() => import('@/pages/LandingPage'), 'LandingPage')
 const MobileTradePage = lazyPage(() => import('@/pages/MobileTradePage'), 'MobileTradePage')
-const DocsProblemPage = lazyPage(() => import('@/pages/DocsProblemPage'), 'DocsProblemPage')
-const DocsZkCommitmentsPage = lazyPage(
-  () => import('@/pages/DocsZkCommitmentsPage'),
-  'DocsZkCommitmentsPage',
-)
-const DocsCircuitPage = lazyPage(() => import('@/pages/DocsCircuitPage'), 'DocsCircuitPage')
+const TradePage = lazyPage(() => import('@/pages/TradePage'), 'TradePage')
+const OrdersPage = lazyPage(() => import('@/pages/OrdersPage'), 'OrdersPage')
+const StatsPage = lazyPage(() => import('@/pages/StatsPage'), 'StatsPage')
 
+/** Marketing + docs eager for instant first paint; app routes lazy-load web3 bundles. */
 export const router = createBrowserRouter([
   {
     element: <MarketingLayout />,

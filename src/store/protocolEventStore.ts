@@ -1,4 +1,6 @@
 import { create } from 'zustand'
+import { countSettlementEvents } from '@/features/stats/utils/statsTimeRange'
+import { loadLocalCommitments } from '@/lib/protocol/localCommitments'
 import type { ChainCommitment, ChainSettlement, ProtocolStats } from '@/lib/protocol/types'
 
 interface ProtocolEventState {
@@ -33,16 +35,35 @@ export function selectProtocolStats(state: ProtocolEventState): ProtocolStats {
   const settled = commitments.filter((c) => c.status === 'settled').length
   const open = commitments.filter((c) => c.status === 'onchain').length
   const total = commitments.length
+  const local = loadLocalCommitments()
+
+  const volumeFromCommitment = (c: ChainCommitment): number => {
+    if (c.escrowWei > 0n) return Number(c.escrowWei) / 1e18
+    const meta = local.find((l) => l.hash.toLowerCase() === c.hash.toLowerCase())
+    if (!meta?.amount) return 0
+    const n = parseFloat(meta.amount.replace(/,/g, '').trim())
+    return Number.isFinite(n) ? n : 0
+  }
 
   let volumeEth = 0
   for (const s of state.settlements) {
-    const a = s.escrowA ?? 0n
-    const b = s.escrowB ?? 0n
-    volumeEth += Number(a + b) / 1e18
+    const onChain = Number((s.escrowA ?? 0n) + (s.escrowB ?? 0n)) / 1e18
+    if (onChain > 0) {
+      volumeEth += onChain
+      continue
+    }
+    const a = local.find((l) => l.hash.toLowerCase() === s.commitmentA.toLowerCase())
+    const b = local.find((l) => l.hash.toLowerCase() === s.commitmentB.toLowerCase())
+    const parse = (amount?: string) => {
+      if (!amount) return 0
+      const n = parseFloat(amount.replace(/,/g, '').trim())
+      return Number.isFinite(n) ? n : 0
+    }
+    volumeEth += parse(a?.amount) + parse(b?.amount)
   }
   if (volumeEth === 0) {
     for (const c of commitments.filter((x) => x.status === 'settled')) {
-      volumeEth += Number(c.escrowWei) / 1e18
+      volumeEth += volumeFromCommitment(c)
     }
   }
 
@@ -51,10 +72,7 @@ export function selectProtocolStats(state: ProtocolEventState): ProtocolStats {
     ? Number(latestSettlement.clearingPrice) / 1e6
     : null
 
-  const settlementCount = Math.max(
-    state.settlements.length,
-    settled >= 2 ? Math.floor(settled / 2) : 0,
-  )
+  const settlementCount = countSettlementEvents(state.settlements.length, settled)
 
   return {
     totalCommitments: total,

@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { MOCK_KPIS, PROOF_TIME_BUCKETS, RECENT_SETTLEMENTS, type StatsTimeRange } from '@/features/stats/data/mockStats'
 import {
   bucketVolumeEvents,
+  countSettlementEvents,
   getMockVolumeChart,
   getRangeLabel,
   isWithinRange,
@@ -9,8 +10,10 @@ import {
 } from '@/features/stats/utils/statsTimeRange'
 import { PROTOCOL } from '@/lib/constants/protocol'
 import { formatEthAmount, truncateHash } from '@/lib/protocol/format'
+import { loadLocalCommitments } from '@/lib/protocol/localCommitments'
 import { useIsChainLive } from '@/lib/protocol/hooks/useProtocolData'
 import { useProtocolEventStore } from '@/store/protocolEventStore'
+import type { ChainCommitment, LocalCommitmentMeta } from '@/lib/protocol/types'
 
 export interface StatsKpiRow {
   label: string
@@ -19,6 +22,36 @@ export interface StatsKpiRow {
   trendLabel: string | null
   trendUp: boolean | null
   progress?: number
+}
+
+/** Escrow is released after settlement — fall back to the amount stored locally at commit time. */
+function volumeEthFromCommitment(
+  c: ChainCommitment,
+  local: LocalCommitmentMeta[],
+): number {
+  if (c.escrowWei > 0n) return Number(c.escrowWei) / 1e18
+  const meta = local.find((l) => l.hash.toLowerCase() === c.hash.toLowerCase())
+  if (!meta?.amount) return 0
+  const parsed = parseFloat(meta.amount.replace(/,/g, '').trim())
+  return Number.isFinite(parsed) ? parsed : 0
+}
+
+function volumeEthFromSettlement(
+  s: { escrowA?: bigint; escrowB?: bigint },
+  local: LocalCommitmentMeta[],
+  commitmentA: string,
+  commitmentB: string,
+): number {
+  const onChain = Number((s.escrowA ?? 0n) + (s.escrowB ?? 0n)) / 1e18
+  if (onChain > 0) return onChain
+  const a = local.find((l) => l.hash.toLowerCase() === commitmentA.toLowerCase())
+  const b = local.find((l) => l.hash.toLowerCase() === commitmentB.toLowerCase())
+  const parse = (amount?: string) => {
+    if (!amount) return 0
+    const n = parseFloat(amount.replace(/,/g, '').trim())
+    return Number.isFinite(n) ? n : 0
+  }
+  return parse(a?.amount) + parse(b?.amount)
 }
 
 export function useStatsPageData(timeRange: StatsTimeRange) {
@@ -63,21 +96,25 @@ export function useStatsPageData(timeRange: StatsTimeRange) {
       isWithinRange(c.blockTimestamp, timeRange),
     )
     const filteredSettlements = settlements.filter((s) => isWithinRange(s.blockTimestamp, timeRange))
+    const local = loadLocalCommitments()
 
     let totalVolumeEth = filteredSettlements.reduce(
-      (sum, s) => sum + Number((s.escrowA ?? 0n) + (s.escrowB ?? 0n)) / 1e18,
+      (sum, s) =>
+        sum +
+        volumeEthFromSettlement(s, local, s.commitmentA, s.commitmentB),
       0,
     )
     if (totalVolumeEth === 0) {
       totalVolumeEth = filteredCommitments
         .filter((c) => c.status === 'settled')
-        .reduce((sum, c) => sum + Number(c.escrowWei) / 1e18, 0)
+        .reduce((sum, c) => sum + volumeEthFromCommitment(c, local), 0)
     }
 
     const settledCount = filteredCommitments.filter((c) => c.status === 'settled').length
     const openCount = filteredCommitments.filter((c) => c.status === 'onchain').length
     const totalCount = filteredCommitments.length
     const settlementRate = totalCount > 0 ? (settledCount / totalCount) * 100 : 0
+    const settlementEventCount = countSettlementEvents(filteredSettlements.length, settledCount)
 
     const kpis: StatsKpiRow[] = [
       {
@@ -96,7 +133,7 @@ export function useStatsPageData(timeRange: StatsTimeRange) {
       },
       {
         label: 'Settlements',
-        value: Math.max(filteredSettlements.length, Math.floor(settledCount / 2)).toLocaleString(),
+        value: settlementEventCount.toLocaleString(),
         trend: null,
         trendLabel: 'verified',
         trendUp: null,
@@ -128,13 +165,13 @@ export function useStatsPageData(timeRange: StatsTimeRange) {
     const volumeEvents: VolumeEvent[] = [
       ...filteredSettlements.map((s) => ({
         timestampSec: s.blockTimestamp,
-        volumeEth: Number((s.escrowA ?? 0n) + (s.escrowB ?? 0n)) / 1e18,
+        volumeEth: volumeEthFromSettlement(s, local, s.commitmentA, s.commitmentB),
       })),
       ...filteredCommitments
         .filter((c) => c.status === 'settled' && !settledHashes.has(c.hash.toLowerCase()))
         .map((c) => ({
           timestampSec: c.blockTimestamp,
-          volumeEth: Number(c.escrowWei) / 1e18,
+          volumeEth: volumeEthFromCommitment(c, local),
         })),
     ]
 
@@ -142,10 +179,11 @@ export function useStatsPageData(timeRange: StatsTimeRange) {
 
     const recentRows = [
       ...filteredSettlements.map((s) => {
-        const half = ((s.escrowA ?? 0n) + (s.escrowB ?? 0n)) / 2n
+        const vol = volumeEthFromSettlement(s, local, s.commitmentA, s.commitmentB)
+        const half = vol > 0 ? vol / 2 : 0
         return {
           txHash: truncateHash(s.txHash),
-          size: formatEthAmount(half > 0n ? half : 1n),
+          size: formatEthAmount(half > 0 ? BigInt(Math.round(half * 1e18)) : 1n),
           proofTime: '—',
           status: 'settled' as const,
         }
@@ -153,12 +191,17 @@ export function useStatsPageData(timeRange: StatsTimeRange) {
       ...filteredCommitments
         .filter((c) => c.status === 'settled' && !settledHashes.has(c.hash.toLowerCase()))
         .slice(0, Math.max(0, 5 - filteredSettlements.length))
-        .map((c) => ({
-          txHash: truncateHash(c.txHash),
-          size: formatEthAmount(c.escrowWei > 0n ? c.escrowWei : 1n),
-          proofTime: '—',
-          status: 'settled' as const,
-        })),
+        .map((c) => {
+          const vol = volumeEthFromCommitment(c, local)
+          return {
+            txHash: truncateHash(c.txHash),
+            size: formatEthAmount(
+              vol > 0 ? BigInt(Math.round(vol * 1e18)) : c.escrowWei > 0n ? c.escrowWei : 1n,
+            ),
+            proofTime: '—',
+            status: 'settled' as const,
+          }
+        }),
     ].slice(0, 5)
 
     return {
